@@ -1,0 +1,46 @@
+name: Daily Opportunity Scan
+
+# Runs automatically once a day, in the cloud — no computer needs to be on.
+# You can also trigger it manually from the Actions tab ("Run workflow").
+on:
+  schedule:
+    # 6:00 UTC = 9:00 AM Nairobi time (EAT, UTC+3). Adjust the hour if you
+    # want a different local time — GitHub cron is always in UTC.
+    - cron: "0 6 * * *"
+  workflow_dispatch: {}
+
+# Needed so the workflow can commit the updated log/seen-store files back
+# to the repo after each run.
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scanner
+        env:
+          # Set this in: Repo Settings -> Secrets and variables -> Actions
+          # -> New repository secret -> name it exactly as below.
+          OPPORTUNITY_SCANNER_SMTP_PASSWORD: ${{ secrets.OPPORTUNITY_SCANNER_SMTP_PASSWORD }}
+        run: python3 scanner.py
+
+      - name: Save results back to the repo
+        run: |
+          git config user.name "opportunity-scanner-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add opportunities_log.csv seen_opportunities.json
+          # Only commit if something actually changed (new opportunities found)
+          git diff --staged --quiet || git commit -m "Daily scan: $(date -u +'%Y-%m-%d')"
+          git push
