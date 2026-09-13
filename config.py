@@ -173,10 +173,10 @@ EMAIL_ENABLED = True
 
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 587
-SMTP_USERNAME = "your.actual.gmail@gmail.com"
+SMTP_USERNAME = "michaelouru2@gmail.com"
 SMTP_PASSWORD_ENV_VAR = "OPPORTUNITY_SCANNER_SMTP_PASSWORD"  # env var name, not the password itself
-EMAIL_FROM = "your.actual.gmail@gmail.com"
-EMAIL_TO = "your.actual.gmail@gmail.com"
+EMAIL_FROM = "michaelouru2@gmail.com"
+EMAIL_TO = "michaelouru2@gmail.com"
 EMAIL_SUBJECT = "New eLearning/EdTech opportunities found"
 
 # ---------------------------------------------------------------------------
