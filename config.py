@@ -28,75 +28,107 @@ KEYWORDS = [
 ]
 
 # Words that, if present, should EXCLUDE an otherwise-matching listing.
-# Useful for filtering out roles you don't want (e.g. junior/unpaid/etc.)
 EXCLUDE_KEYWORDS = [
     "unpaid",
     "volunteer",
 ]
 
-# Words/phrases that suggest a listing is remote-friendly or open to
-# candidates anywhere, not tied to one office location. Used only to LABEL
-# results (see REQUIRE_REMOTE_SIGNAL below to also filter by this).
-REMOTE_SIGNAL_KEYWORDS = [
-    "remote",
-    "home-based",
-    "home based",
-    "telecommute",
-    "virtual",
-    "worldwide",
-    "any location",
-    "work from anywhere",
-    "global consultant",
+# ---------------------------------------------------------------------------
+# CATEGORIZATION: Jobs / Consultancies / Grants
+# Every matched listing is classified into one of these three so the email
+# digest and CSV can group them. This is best-effort keyword matching, not
+# guaranteed — ambiguous listings fall into "Uncertain" rather than being
+# force-fit into the wrong bucket. Order matters in the code (grants and
+# consultancy signals are checked before job signals, since a job posting
+# rarely also says "call for proposals").
+#
+# "Consultancy" deliberately covers BOTH individual-consultant and
+# firm/company bids (RFPs, ToRs, EOIs are almost always open to either
+# unless a listing explicitly says "individuals only" or "firms only") —
+# so Instracta-eligible and personal-capacity opportunities both land here.
+# ---------------------------------------------------------------------------
+GRANT_KEYWORDS = [
+    "call for proposals", "request for applications", "grant opportunity",
+    "funding opportunity", "sub-grant", "subgrant", "seed grant",
+    "grant application", "notice of funding", "rfa ",
 ]
 
-# If True, generic_html results that show NEITHER a remote-signal keyword
-# NOR come from an inherently international source (reliefweb, unjobs,
-# devex, idealist) are dropped rather than just labeled. Turn this on once
-# you've reviewed a few runs and confirmed you only want remote/global
-# postings — it's off by default so you can see everything first and judge.
+CONSULTANCY_KEYWORDS = [
+    "consultant", "consultancy", "individual contractor", "terms of reference",
+    "request for proposals", "rfp", "expression of interest", "eoi",
+    "call for consultancy", "firm or individual", "short-term expert",
+    "sti ", "long-term expert", "lte ",
+]
+
+JOB_KEYWORDS = [
+    "vacancy", "job vacancy", "job opening", "we are hiring", "is hiring",
+    "recruitment", "full-time position", "permanent position", "staff position",
+    "career opportunity", "job opportunity",
+]
+
+# ---------------------------------------------------------------------------
+# REMOTE SIGNAL
+# ---------------------------------------------------------------------------
+REMOTE_SIGNAL_KEYWORDS = [
+    "remote", "home-based", "home based", "telecommute", "virtual",
+    "worldwide", "any location", "work from anywhere", "global consultant",
+]
+
 REQUIRE_REMOTE_SIGNAL = False
 
 # ---------------------------------------------------------------------------
 # EXPIRATION FILTERING
-# Nothing is more annoying than a "new opportunity" that closed months ago.
-# ReliefWeb's API gives us a real closing date, so those are filtered
-# precisely. For scraped (generic_html) sources we don't get a reliable
-# structured date from the listing page alone, so the scanner does a
-# second pass: it opens each matching link and looks for a nearby deadline
-# phrase ("deadline", "closing date", "apply by", etc.) and tries to parse
-# a date from it. If that date is in the past, the listing is dropped
-# instead of reported. If no date can be found at all, the listing is kept
-# but flagged "(deadline not found — verify manually)" so you know to check.
+# ReliefWeb's API gives a real closing date, so those are filtered
+# precisely. For scraped/web-search sources, the scanner opens each match's
+# own page and looks for a deadline phrase ("deadline", "closing date",
+# "apply by", etc.) and drops it if that date has passed. If no date can be
+# found at all, it's kept but flagged "deadline not found — verify manually".
 # ---------------------------------------------------------------------------
 CHECK_DEADLINES_ON_DETAIL_PAGES = True
-MAX_DETAIL_PAGE_CHECKS_PER_RUN = 30  # caps total extra requests per run
+MAX_DETAIL_PAGE_CHECKS_PER_RUN = 40  # caps total extra requests per run
+
+# ---------------------------------------------------------------------------
+# OPEN-WEB SEARCH (reaches institutional sites you haven't hardcoded)
+# In addition to fixed sources below, the scanner runs keyword searches
+# against DuckDuckGo's HTML search (no API key needed, no JS required) —
+# this is what reaches UNESCO/UNICEF/World Bank/foundation pages etc. that
+# aren't in the fixed SOURCES list. Each topic below is combined with a
+# category modifier ("consultancy", "vacancy", "grant") to build queries,
+# e.g. "instructional design consultancy NGO".
+#
+# MAX_WEB_SEARCH_QUERIES_PER_RUN caps how many searches run per execution —
+# keep this modest; DuckDuckGo can temporarily block an IP that queries it
+# too aggressively. At ~1 query/second this is a light load.
+# ---------------------------------------------------------------------------
+WEB_SEARCH_ENABLED = True
+WEB_SEARCH_TOPICS = [
+    "instructional design",
+    "e-learning",
+    "learning management system Moodle",
+    "digital learning",
+]
+WEB_SEARCH_CATEGORY_MODIFIERS = ["consultancy NGO", "vacancy NGO", "grant education"]
+MAX_WEB_SEARCH_QUERIES_PER_RUN = 10
+MAX_RESULTS_PER_WEB_SEARCH_QUERY = 8
 
 # ---------------------------------------------------------------------------
 # SOURCES
-# Three kinds of sources are supported:
+# Fixed sources checked every run, in addition to the open-web search above.
 #
-# 1. "reliefweb_api" — ReliefWeb's public jobs API. Global coverage, and the
-#    only source with a genuinely reliable closing date, so expired listings
-#    are excluded automatically and precisely.
+# Types supported:
+#   "reliefweb_api" — ReliefWeb's public jobs API (global, real closing dates)
+#   "generic_html"  — scans a listing/search page for keyword-matching links
 #
-# 2. "generic_html" — fetches a listings/search page and looks for links
-#    whose visible text contains any KEYWORD. Works for server-rendered
-#    pages (most WordPress sites, UNjobs). Won't see JavaScript-rendered
-#    listings (a few modern job boards load results after the page loads —
-#    if a source below consistently returns nothing, that's likely why).
-#
-# 3. Kenya/local job boards are commented out by default per your request
-#    for worldwide/remote-first results — uncomment any you want back in.
-#
-# NOTE: HTML-scraped sources can break if a site redesigns its page. If a
-# source stops returning results, check its URL still works in a browser.
+# NOTE: HTML-scraped sources can break if a site redesigns its page, and
+# some (DevelopmentAid, Idealist) gate full detail behind a membership
+# login — scraping will surface titles/snippets from public pages only.
 # ---------------------------------------------------------------------------
 SOURCES = [
     {
         "name": "ReliefWeb Jobs (global)",
         "type": "reliefweb_api",
         "url": "https://api.reliefweb.int/v1/jobs",
-        "appname": "ngo-elearning-scanner",  # required by ReliefWeb API, any string works
+        "appname": "ngo-elearning-scanner",
     },
     {
         "name": "UNjobs — Instructional Design",
@@ -132,9 +164,30 @@ SOURCES = [
         "url": "https://www.idealist.org/en/jobs?q=instructional%20design&type=REMOTE",
         "css_selector": "a",
         "inherently_global": True,
-        # Idealist is a JavaScript-rendered site — this may return few or no
-        # results via plain HTML fetching. Left in as a best-effort source;
-        # if it consistently returns nothing, that's why (see README).
+        # JavaScript-rendered site — may return little via plain HTML fetch.
+    },
+    {
+        "name": "DevelopmentAid — Jobs",
+        "type": "generic_html",
+        "url": "https://www.developmentaid.org/jobs?keywords=instructional+design",
+        "css_selector": "a",
+        "inherently_global": True,
+        # Full listings require a paid membership; public page surfaces
+        # titles/previews only.
+    },
+    {
+        "name": "DevelopmentAid — Tenders (consultancies)",
+        "type": "generic_html",
+        "url": "https://www.developmentaid.org/tenders/search?keywords=instructional+design",
+        "css_selector": "a",
+        "inherently_global": True,
+    },
+    {
+        "name": "DevelopmentAid — Grants",
+        "type": "generic_html",
+        "url": "https://www.developmentaid.org/grants/search?keywords=education",
+        "css_selector": "a",
+        "inherently_global": True,
     },
 
     # --- Kenya/local sources (disabled by default — uncomment to re-add) ---
@@ -144,37 +197,23 @@ SOURCES = [
     #     "url": "https://www.corporatestaffing.co.ke/?s=instructional+design",
     #     "css_selector": "a",
     # },
-    # {
-    #     "name": "Corporate Staffing Kenya (LMS)",
-    #     "type": "generic_html",
-    #     "url": "https://www.corporatestaffing.co.ke/?s=learning+management+system",
-    #     "css_selector": "a",
-    # },
-    # {
-    #     "name": "Fuzu Kenya",
-    #     "type": "generic_html",
-    #     "url": "https://www.fuzu.com/kenya/search?q=instructional%20design",
-    #     "css_selector": "a",
-    # },
 ]
 
 # ---------------------------------------------------------------------------
 # OUTPUT
 # ---------------------------------------------------------------------------
-LOG_CSV_PATH = "opportunities_log.csv"     # every match ever found, timestamped
-SEEN_STORE_PATH = "seen_opportunities.json"  # tracks what's already been reported
+LOG_CSV_PATH = "opportunities_log.csv"
+SEEN_STORE_PATH = "seen_opportunities.json"
 
 # ---------------------------------------------------------------------------
-# EMAIL (optional)
-# If EMAIL_ENABLED is False, the script just prints new matches to the
-# terminal and appends them to the CSV — no email setup required.
+# EMAIL (optional) — digest is grouped into Jobs / Consultancies / Grants
 # ---------------------------------------------------------------------------
 EMAIL_ENABLED = True
 
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 587
 SMTP_USERNAME = "michaelouru2@gmail.com"
-SMTP_PASSWORD_ENV_VAR = "OPPORTUNITY_SCANNER_SMTP_PASSWORD"  # env var name, not the password itself
+SMTP_PASSWORD_ENV_VAR = "OPPORTUNITY_SCANNER_SMTP_PASSWORD"
 EMAIL_FROM = "michaelouru2@gmail.com"
 EMAIL_TO = "michaelouru2@gmail.com"
 EMAIL_SUBJECT = "New eLearning/EdTech opportunities found"
