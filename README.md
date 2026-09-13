@@ -3,32 +3,41 @@
 A small script that checks a list of job/consultancy/procurement pages
 for listings matching your keywords (instructional design, e-learning,
 LMS, Moodle, etc.), and shows you only the ones it hasn't shown you
-before. Runs on your own machine — nothing here depends on Claude or
+before. Runs on your own machine ‚Äî nothing here depends on Claude or
 any Anthropic service after you download it.
 
 ## What it does and doesn't do
 
-- ✅ Checks ReliefWeb's official jobs API directly — global coverage, and the
+- ‚úÖ Checks ReliefWeb's official jobs API directly ‚Äî global coverage, and the
   only source with a real closing date, so expired listings are excluded precisely
-- ✅ Scans UNjobs, Devex, and Idealist (worldwide, not location-limited) plus
-  any career/procurement pages you add, for keyword matches
-- ✅ For scraped sources, opens each match's own page and looks for a
-  deadline phrase — drops it if that date has passed, flags it if no date
-  could be found at all, so you're not chasing closed roles
-- ✅ Labels results as remote/global vs. "location not confirmed remote" —
-  see `REQUIRE_REMOTE_SIGNAL` in config.py to hard-filter on this once you've
-  reviewed a run or two
-- ✅ Remembers what it's already shown you, so re-running only surfaces new items
-- ✅ Logs everything it ever finds to a CSV you can open in Excel
-- ✅ Optionally emails you a digest when there's something new
-- ❌ Does **not** run by itself — you schedule it (instructions below) on your
-  own computer or via GitHub Actions (already set up — see below)
-- ❌ Can't see JavaScript-rendered listings on sites that load jobs dynamically
-  without a plain HTML fallback (Idealist is the main risk here — it's included
-  as best-effort but may return little). If a source stops finding matches,
-  check troubleshooting below
-- ❌ Deadline-detection on scraped sources is best-effort text matching, not
-  guaranteed — always treat "deadline not found, verify manually" as exactly that
+- ‚úÖ Scans fixed global sources: UNjobs, Devex, Idealist, and **DevelopmentAid**
+  (jobs, tenders, and grants sections)
+- ‚úÖ Also runs **open keyword searches across the whole web** (via DuckDuckGo's
+  HTML search, no API key needed) ‚Äî this is what catches institutional sites
+  you haven't hardcoded: foundations, universities, UN agency pages, etc.
+- ‚úÖ **Classifies every match into Job / Consultancy / Grant** (best-effort
+  keyword matching ‚Äî ambiguous ones land in "Uncertain" rather than being
+  force-fit). "Consultancy" covers both individual-consultant and firm/company
+  bids, since RFPs/ToRs/EOIs are almost always open to either
+- ‚úÖ For scraped sources, opens each match's own page and looks for a
+  deadline phrase ‚Äî drops it if that date has passed, flags it if no date
+  could be found at all
+- ‚úÖ Email digest and console output are **grouped by category** (Jobs /
+  Consultancies / Grants) so you can scan straight to what you're after
+- ‚úÖ Labels results as remote/global vs. "location not confirmed remote"
+- ‚úÖ Remembers what it's already shown you, so re-running only surfaces new items
+- ‚úÖ Logs everything it ever finds to a CSV you can open in Excel
+- ‚ùå Does **not** run by itself ‚Äî you schedule it (instructions below) on your
+  own computer or via GitHub Actions (already set up ‚Äî see below)
+- ‚ùå Can't see JavaScript-rendered listings on sites that load jobs dynamically
+  without a plain HTML fallback (Idealist is the main risk here)
+- ‚ùå Deadline-detection and category classification are both best-effort text
+  matching, not guaranteed ‚Äî treat "verify manually" and "Uncertain" exactly as that
+- ‚ùå DevelopmentAid gates most detail behind a paid membership ‚Äî scraping
+  surfaces titles/previews from its public pages, not full listings
+- ‚ùå The open-web search is capped (`MAX_WEB_SEARCH_QUERIES_PER_RUN`, default
+  10) to avoid DuckDuckGo rate-limiting your IP ‚Äî it won't be exhaustive, but
+  it widens the net well beyond the fixed source list
 
 ## 1. Install (one-time)
 
@@ -47,28 +56,32 @@ python3 scanner.py
 
 First run will report everything it finds (nothing is "seen" yet).
 After that, only genuinely new listings show up. Check `opportunities_log.csv`
-in the same folder — that's your full running history.
+in the same folder ‚Äî that's your full running history.
 
 ## 3. Customize it
 
 Open `config.py`:
 
-- **KEYWORDS** — add/remove terms. Keep it specific enough to avoid noise.
-- **EXCLUDE_KEYWORDS** — anything with these words gets filtered out even
+- **KEYWORDS** ‚Äî add/remove terms. Keep it specific enough to avoid noise.
+- **EXCLUDE_KEYWORDS** ‚Äî anything with these words gets filtered out even
   if it matches a keyword (e.g. "volunteer", "unpaid").
-- **SOURCES** — the list of pages it checks. By default this is worldwide
-  sources only (ReliefWeb, UNjobs, Devex, Idealist). Kenya-specific boards
-  (Corporate Staffing, Fuzu) are included but commented out — remove the `#`
-  in front of a block if you want local roles back in alongside the global ones.
-  Add more sources by copying an existing `generic_html` entry.
-- **REQUIRE_REMOTE_SIGNAL** — set to `True` to drop any scraped listing that
+- **SOURCES** ‚Äî the list of fixed pages it checks (ReliefWeb, UNjobs, Devex,
+  Idealist, DevelopmentAid). Add more by copying an existing `generic_html` entry.
+- **WEB_SEARCH_TOPICS / WEB_SEARCH_CATEGORY_MODIFIERS** ‚Äî controls the
+  open-web search. Each topic is combined with each modifier to build a
+  query (e.g. "instructional design" + "consultancy NGO"), so 4 topics √ó 3
+  modifiers = 12 queries, capped by `MAX_WEB_SEARCH_QUERIES_PER_RUN`. Add a
+  topic for a niche you want covered, or a modifier for a category you want
+  more of (e.g. `"tender education"` to lean more toward consultancies).
+- **GRANT_KEYWORDS / CONSULTANCY_KEYWORDS / JOB_KEYWORDS** ‚Äî drives the
+  Job/Consultancy/Grant classification. If you notice a listing landing in
+  the wrong bucket, add the phrase that should have triggered the right one.
+- **REQUIRE_REMOTE_SIGNAL** ‚Äî set to `True` to drop any scraped listing that
   doesn't explicitly mention "remote," "worldwide," etc. and isn't from an
   inherently global source. Leave `False` at first so you can see everything
-  and judge for yourself — some remote roles never say the word "remote."
-- **CHECK_DEADLINES_ON_DETAIL_PAGES / MAX_DETAIL_PAGE_CHECKS_PER_RUN** —
-  controls the expired-listing filter for scraped sources. Raise the max if
-  you add a lot more sources and want deeper checking per run (each check is
-  one extra page fetch, so very high numbers slow the run down).
+  and judge for yourself ‚Äî some remote roles never say the word "remote."
+- **CHECK_DEADLINES_ON_DETAIL_PAGES / MAX_DETAIL_PAGE_CHECKS_PER_RUN** ‚Äî
+  controls the expired-listing filter for scraped and web-search sources.
 
 ## 4. Schedule it to run daily
 
@@ -78,7 +91,7 @@ Open `config.py`:
 crontab -e
 ```
 
-Add this line (runs every day at 7:00 AM — adjust the time as you like):
+Add this line (runs every day at 7:00 AM ‚Äî adjust the time as you like):
 
 ```
 0 7 * * * cd /full/path/to/ngo-opportunity-scanner && /usr/bin/python3 scanner.py >> cron.log 2>&1
@@ -88,19 +101,19 @@ Save and exit. Use `crontab -l` to confirm it's there.
 
 ### Windows (Task Scheduler)
 
-1. Open **Task Scheduler** → **Create Basic Task**
+1. Open **Task Scheduler** ‚Üí **Create Basic Task**
 2. Name it "Opportunity Scanner", set trigger to **Daily** at a time you like
 3. Action: **Start a program**
    - Program/script: `python` (or the full path to `python.exe`)
    - Add arguments: `scanner.py`
    - Start in: the full path to the `ngo-opportunity-scanner` folder
-4. Finish — it'll now run daily even if you're not logged in (depending on
+4. Finish ‚Äî it'll now run daily even if you're not logged in (depending on
    your power settings)
 
 ### Cloud option: GitHub Actions (no computer needed, free)
 
 This folder already includes `.github/workflows/daily-scan.yml`, which
-runs the scanner automatically every day in the cloud — your laptop can
+runs the scanner automatically every day in the cloud ‚Äî your laptop can
 be off, asleep, anywhere. GitHub gives every account free minutes for
 this (a run takes well under a minute, so you won't come close to any
 limit even on a private repo).
@@ -123,8 +136,8 @@ limit even on a private repo).
    (Replace the URL with the one GitHub shows you after creating the repo.)
 
 3. **Add your email password as a secret** (never put it directly in
-   `config.py`): repo page → **Settings** → **Secrets and variables** →
-   **Actions** → **New repository secret**. Name it exactly:
+   `config.py`): repo page ‚Üí **Settings** ‚Üí **Secrets and variables** ‚Üí
+   **Actions** ‚Üí **New repository secret**. Name it exactly:
    ```
    OPPORTUNITY_SCANNER_SMTP_PASSWORD
    ```
@@ -139,7 +152,7 @@ limit even on a private repo).
    git push
    ```
 
-5. **Check it's scheduled.** Go to the repo's **Actions** tab — you'll see
+5. **Check it's scheduled.** Go to the repo's **Actions** tab ‚Äî you'll see
    "Daily Opportunity Scan" listed. It runs automatically at 9:00 AM
    Nairobi time daily. To test it immediately rather than waiting, click
    into the workflow and press **Run workflow**.
@@ -156,7 +169,7 @@ subtract 3 hours from your desired local time), commit, and push.
 ### Alternative always-on option
 
 If you'd rather not use GitHub, the same script works unchanged on a
-small always-on machine — a Raspberry Pi or a $5/month VPS (DigitalOcean,
+small always-on machine ‚Äî a Raspberry Pi or a $5/month VPS (DigitalOcean,
 Linode) with the cron setup above. Ask if you'd like help with that route
 instead.
 
@@ -186,7 +199,7 @@ an email when something new turns up:
    environment variable in Windows settings so it's always available).
 
 3. If using Gmail, generate an **App Password** (not your regular Gmail
-   password): https://myaccount.google.com/apppasswords — this requires
+   password): https://myaccount.google.com/apppasswords ‚Äî this requires
    2-Step Verification to be turned on.
 
 ## Troubleshooting
@@ -196,7 +209,7 @@ The site likely changed its page structure, or the jobs are loaded via
 JavaScript after the page loads (which plain HTML fetching can't see).
 Open the URL in a browser, view page source (Ctrl+U / Cmd+Option+U), and
 check whether the job titles appear in the raw HTML. If not, that source
-needs a different approach (browser automation) — let me know and I can
+needs a different approach (browser automation) ‚Äî let me know and I can
 adapt it.
 
 **Getting blocked / no results at all from a source:**
@@ -205,7 +218,7 @@ between runs, or check if the site has an official API or RSS feed
 instead (more reliable long-term than scraping).
 
 **Duplicate entries in the CSV:**
-The CSV logs everything found on *first* detection — it won't re-log the
+The CSV logs everything found on *first* detection ‚Äî it won't re-log the
 same URL twice, but if a site changes a job's URL slightly, it may look
 "new" again. This is a minor cosmetic issue, not a functional bug.
 
@@ -213,8 +226,9 @@ same URL twice, but if a site changes a job's URL slightly, it may look
 
 | File | Purpose |
 |---|---|
-| `scanner.py` | Main script — run this |
-| `config.py` | Your settings — keywords, sources, email |
+| `scanner.py` | Main script ‚Äî run this |
+| `config.py` | Your settings ‚Äî keywords, sources, email |
 | `requirements.txt` | Python packages needed |
-| `opportunities_log.csv` | Created after first run — full history |
-| `seen_opportunities.json` | Created after first run — dedup memory |
+| `opportunities_log.csv` | Created after first run ‚Äî full history |
+| `seen_opportunities.json` | Created after first run ‚Äî dedup memory |
+
