@@ -80,6 +80,39 @@ def has_remote_signal(text: str) -> bool:
     return any(kw.lower() in lowered for kw in config.REMOTE_SIGNAL_KEYWORDS)
 
 
+def has_opportunity_signal(text: str) -> bool:
+    """
+    True if text contains a genuine job/consultancy/grant signal word —
+    used to filter the open-web search down to actual postings instead of
+    vendor pages, blog posts, or product listicles that merely mention a
+    topic keyword. Fixed job-board sources don't need this (everything on
+    them is inherently an opportunity), but the open web is unstructured.
+    """
+    if not text:
+        return False
+    lowered = text.lower()
+    all_signals = (
+        config.GRANT_KEYWORDS
+        + config.CONSULTANCY_KEYWORDS
+        + config.JOB_KEYWORDS
+        + config.OPPORTUNITY_SIGNAL_EXTRA_KEYWORDS
+    )
+    return any(kw.lower() in lowered for kw in all_signals)
+
+
+def is_blocked_url(url: str) -> bool:
+    """True if url is a known vendor/blog/aggregator page or generic
+    category/search-listing page rather than a specific opportunity."""
+    if not url:
+        return False
+    lowered = url.lower()
+    if any(domain in lowered for domain in config.DOMAIN_BLOCKLIST):
+        return True
+    if any(pattern in lowered for pattern in config.URL_PATTERN_BLOCKLIST):
+        return True
+    return False
+
+
 def classify_opportunity(text: str) -> str:
     """
     Best-effort classification into Grant / Consultancy / Job / Uncertain.
@@ -303,6 +336,8 @@ def fetch_generic_html(source_cfg: dict) -> list:
             href = base + href
         if not href.startswith("http"):
             continue
+        if is_blocked_url(href):
+            continue
 
         key = (text, href)
         if key in seen_on_page:
@@ -366,6 +401,8 @@ def fetch_web_search(source_cfg: dict) -> list:
                 href = link.get("href")
                 if not title or not href or not href.startswith("http"):
                     continue
+                if is_blocked_url(href):
+                    continue
                 if not matches_keywords(title):
                     continue
                 if href in seen_urls_this_source:
@@ -376,6 +413,10 @@ def fetch_web_search(source_cfg: dict) -> list:
                     "a", class_="result__snippet"
                 ) if link.find_parent() else None
                 snippet = snippet_tag.get_text(strip=True) if snippet_tag else ""
+
+                combined_text = f"{title} {snippet}"
+                if config.REQUIRE_OPPORTUNITY_SIGNAL_FOR_WEB_SEARCH and not has_opportunity_signal(combined_text):
+                    continue
 
                 result = _build_result(
                     f"Web search ({modifier})", title, href,
