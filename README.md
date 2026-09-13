@@ -8,16 +8,27 @@ any Anthropic service after you download it.
 
 ## What it does and doesn't do
 
-- ✅ Checks ReliefWeb's official jobs API directly (most reliable source)
-- ✅ Scans a set of career/procurement pages you configure for keyword matches
+- ✅ Checks ReliefWeb's official jobs API directly — global coverage, and the
+  only source with a real closing date, so expired listings are excluded precisely
+- ✅ Scans UNjobs, Devex, and Idealist (worldwide, not location-limited) plus
+  any career/procurement pages you add, for keyword matches
+- ✅ For scraped sources, opens each match's own page and looks for a
+  deadline phrase — drops it if that date has passed, flags it if no date
+  could be found at all, so you're not chasing closed roles
+- ✅ Labels results as remote/global vs. "location not confirmed remote" —
+  see `REQUIRE_REMOTE_SIGNAL` in config.py to hard-filter on this once you've
+  reviewed a run or two
 - ✅ Remembers what it's already shown you, so re-running only surfaces new items
 - ✅ Logs everything it ever finds to a CSV you can open in Excel
 - ✅ Optionally emails you a digest when there's something new
 - ❌ Does **not** run by itself — you schedule it (instructions below) on your
-  own computer, using cron (Mac/Linux) or Task Scheduler (Windows)
+  own computer or via GitHub Actions (already set up — see below)
 - ❌ Can't see JavaScript-rendered listings on sites that load jobs dynamically
-  without a plain HTML fallback — if a source stops finding matches, check
-  troubleshooting below
+  without a plain HTML fallback (Idealist is the main risk here — it's included
+  as best-effort but may return little). If a source stops finding matches,
+  check troubleshooting below
+- ❌ Deadline-detection on scraped sources is best-effort text matching, not
+  guaranteed — always treat "deadline not found, verify manually" as exactly that
 
 ## 1. Install (one-time)
 
@@ -45,9 +56,19 @@ Open `config.py`:
 - **KEYWORDS** — add/remove terms. Keep it specific enough to avoid noise.
 - **EXCLUDE_KEYWORDS** — anything with these words gets filtered out even
   if it matches a keyword (e.g. "volunteer", "unpaid").
-- **SOURCES** — the list of pages it checks. Add more by copying an existing
-  `generic_html` entry and changing the `name` and `url`. Remove any you
-  don't want checked.
+- **SOURCES** — the list of pages it checks. By default this is worldwide
+  sources only (ReliefWeb, UNjobs, Devex, Idealist). Kenya-specific boards
+  (Corporate Staffing, Fuzu) are included but commented out — remove the `#`
+  in front of a block if you want local roles back in alongside the global ones.
+  Add more sources by copying an existing `generic_html` entry.
+- **REQUIRE_REMOTE_SIGNAL** — set to `True` to drop any scraped listing that
+  doesn't explicitly mention "remote," "worldwide," etc. and isn't from an
+  inherently global source. Leave `False` at first so you can see everything
+  and judge for yourself — some remote roles never say the word "remote."
+- **CHECK_DEADLINES_ON_DETAIL_PAGES / MAX_DETAIL_PAGE_CHECKS_PER_RUN** —
+  controls the expired-listing filter for scraped sources. Raise the max if
+  you add a lot more sources and want deeper checking per run (each check is
+  one extra page fetch, so very high numbers slow the run down).
 
 ## 4. Schedule it to run daily
 
