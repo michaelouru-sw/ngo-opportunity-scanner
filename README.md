@@ -288,3 +288,11 @@ LinkedIn prohibits scraping, so the scanner reads the **job-alert emails LinkedI
 `linkedin.com/jobs/view` pages through the web search. Setup: on linkedin.com/jobs run a search,
 turn on "Job alert" with email notifications, for example "instructional designer",
 "e-learning consultant", "Moodle LMS", "learning experience designer" (Kenya + remote).
+
+## Deadline integrity & wider coverage
+
+- **Hard rule:** nothing with a deadline before the run date is ever reported; expired rows are moved from the live log to `opportunities_archive.csv`, and the dashboard hides any row whose deadline has passed.
+- Consultancies, grants and calls for papers must have a verified **future** deadline (journals directories and LinkedIn alerts are exempt). Pages saying "closed/expired/awarded", old posting dates, or only past years (e.g. "CFP 2023") are dropped.
+- Items that couldn't be checked yet (network error / detail budget) are retried next run instead of being lost.
+- **World Bank:** only open notices (EOI, RFP, invitations) with a future submission deadline; awards, cancelled and closed notices are skipped; 12 search terms × 2 pages.
+- **Wider:** tender/RFP/EOI web queries, more site-targeted queries (UNGM, Devex, Impactpool, ReliefWeb), paginated ReliefWeb search, WikiCFP real event links, plus UN Careers, AfDB, Kenya PPIP, UNICEF procurement, Save the Children, IRC, Mercy Corps, Amref, GIZ, Devex Funding. New seeds are unverified from the build sandbox; check source health after the first run.

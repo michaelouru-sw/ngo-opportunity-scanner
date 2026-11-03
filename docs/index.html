@@ -138,7 +138,7 @@ function opts(sel, values, label){
 }
 
 function init(rows){
-  data = rows.map(prep);
+  data = rows.map(prep).filter(r=>r.days===null||r.days>=0);  // never show a deadline before today
   const uniq = k => [...new Set(data.map(r=>r[k]).filter(Boolean))].sort();
   opts($("cat"), ["Consultancy","Academic","Grant","Job","Uncertain"], "All");
   opts($("loc"), uniq("location"), "All");

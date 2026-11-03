@@ -107,6 +107,7 @@ def build_fetchers(core) -> dict:
             it["location"] = src["region"]
         if src.get("category"):  # source lists one kind of thing (e.g. only CFPs)
             it["category"] = src["category"]
+        it["rolling"] = bool(src.get("rolling"))  # no deadline expected (e.g. journal directories)
         return it
 
     def jget(h, url, **kw):
@@ -214,31 +215,53 @@ def build_fetchers(core) -> dict:
 
     # ---- World Bank procurement notices ----------------------------------
 
+    WB_OPEN = ("expression of interest", "request for proposal", "invitation", "request for bid",
+               "specific procurement", "general procurement", "prequalification", "request for quotation")
+    WB_DEADLINE_KEYS = ("submission_deadline_date", "bid_deadline_date", "deadline_date", "submission_deadline")
+
     def worldbank(src):
+        """Open World Bank procurement notices only: closed/awarded/cancelled
+        notices and anything without a future submission deadline are skipped."""
         h, items, seen = H(), [], set()
-        for term in terms(src):
-            data = jget(h, "https://search.worldbank.org/api/v2/procnotices",
-                        params={"format": "json", "rows": 50, "qterm": term,
-                                "srt": "submission_date", "order": "desc"})
-            notices = (data or {}).get("procnotices", [])
-            for n in notices.values() if isinstance(notices, dict) else notices:
-                h["raw"] += 1
-                nid = n.get("id")
-                title = n.get("bid_description") or n.get("project_name") or ""
-                if nid in seen or not core.matches_keywords(title):
-                    continue
-                seen.add(nid)
-                deadline = None
-                raw_dl = n.get("submission_deadline_date")
-                if raw_dl:
-                    try:
-                        deadline = dateparser.parse(raw_dl).date()
-                    except (ValueError, OverflowError):
-                        pass
-                kind = n.get("notice_type", "")
-                url = n.get("url") or f"https://projects.worldbank.org/en/projects-operations/procurement-detail/{nid}"
-                items.append(mk(src, title, url, loc=n.get("project_ctry_name", ""), deadline=deadline,
-                                snippet=kind, extra=kind))
+        today = core._today_utc()
+        for term in (src.get("terms") or cfg.WORLDBANK_TERMS):
+            for offset in range(0, src.get("pages", 2) * 100, 100):
+                data = jget(h, "https://search.worldbank.org/api/v2/procnotices",
+                            params={"format": "json", "rows": 100, "os": offset, "qterm": term,
+                                    "srt": "submission_deadline_date", "order": "desc"})
+                notices = (data or {}).get("procnotices", [])
+                notices = list(notices.values()) if isinstance(notices, dict) else notices
+                if not notices:
+                    break
+                for n in notices:
+                    h["raw"] += 1
+                    nid = n.get("id")
+                    kind = (n.get("notice_type") or "").strip()
+                    status = (n.get("notice_status") or "").lower()
+                    if nid in seen or "award" in kind.lower() or any(x in status for x in ("closed", "cancel", "award")):
+                        continue
+                    if kind and not any(k in kind.lower() for k in WB_OPEN):
+                        continue
+                    deadline = None
+                    for key in WB_DEADLINE_KEYS:
+                        if n.get(key):
+                            try:
+                                deadline = dateparser.parse(str(n[key])).date()
+                            except (ValueError, OverflowError):
+                                pass
+                            break
+                    if not deadline or deadline < today:
+                        continue
+                    title = n.get("bid_description") or n.get("project_name") or ""
+                    if not core.matches_keywords(f"{title} {n.get('project_name', '')}"):
+                        continue
+                    seen.add(nid)
+                    url = n.get("url") or f"https://projects.worldbank.org/en/projects-operations/procurement-detail/{nid}"
+                    it = mk(src, title, url, loc=n.get("project_ctry_name", ""), deadline=deadline,
+                            snippet=f"{kind} {n.get('project_name', '')}", extra=kind)
+                    if any(k in kind.lower() for k in ("expression of interest", "request for proposal")):
+                        it["category"] = "Consultancy"
+                    items.append(it)
         return fin(items, h)
 
     # ---- DOAJ: journals that charge no APC ---------------------------------
@@ -335,6 +358,7 @@ def build_fetchers(core) -> dict:
             if core.EXCLUDE_RE and core.EXCLUDE_RE.search(f"{title}".lower()):
                 continue
             it = mk(src, title, f"https://www.linkedin.com/jobs/view/{jid}/", loc=ctx, snippet=ctx)
+            it["rolling"] = True  # fresh alert email; the page sits behind a login so it can't be re-checked
             if it["category"] == "Uncertain":
                 it["category"] = "Job"
             it["no_title_dedupe"] = True  # same title at different companies are different jobs
@@ -379,7 +403,11 @@ def build_fetchers(core) -> dict:
         h, items, seen = H(), [], set()
         qs = terms(src)
         match = core.topic_matches if src.get("topic_only") else core.matches_keywords
-        urls = [src["search_url"].format(q=quote_plus(q)) for q in qs] if "search_url" in src else [src["url"]]
+        if "search_url" in src:  # optional {p} placeholder + "pages": N walks result pages
+            urls = [src["search_url"].format(q=quote_plus(q), p=pg) for q in qs
+                    for pg in range(1, src.get("pages", 1) + 1)]
+        else:
+            urls = [src["url"]]
 
         for u in urls:
             try:

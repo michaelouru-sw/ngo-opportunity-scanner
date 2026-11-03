@@ -336,19 +336,80 @@ def find_deadline_structured(soup: BeautifulSoup):
     return None
 
 
+CLOSED_RE = re.compile(
+    r"\b(?:this\s+(?:job|vacancy|position|call|opportunity|tender|notice|posting)\s+(?:has\s+)?(?:closed|expired|ended)"
+    r"|no\s+longer\s+(?:accepting|available|open)|(?:position|vacancy)\s+(?:has\s+been\s+)?filled"
+    r"|(?:applications?|submissions?|call)\s+(?:are\s+|is\s+|has\s+|have\s+)?(?:now\s+)?closed"
+    r"|(?:vacancy|job|posting|listing)\s+(?:has\s+)?expired|contract\s+award|award\s+notice|notice\s+of\s+award)\b", re.I)
+POSTED_TRIGGERS = ["date posted", "posted on", "posted:", "published on", "published:", "date published",
+                   "posting date", "publication date", "date of publication"]
+MAX_POST_AGE_DAYS = getattr(config, "MAX_POST_AGE_DAYS", 75)
+
+
+def _parse_past_date(raw: str):
+    try:
+        if re.match(r"\d{4}-\d{2}-\d{2}", raw):
+            d = datetime.strptime(raw[:10], "%Y-%m-%d").date()
+        else:
+            d = dateparser.parse(raw, dayfirst=True, fuzzy=False).date()
+    except (ValueError, OverflowError, TypeError):
+        return None
+    today = _today_utc()
+    return d if today - timedelta(days=1500) <= d <= today else None
+
+
+def find_posted_date(soup: BeautifulSoup, text: str):
+    """When the posting was published: JSON-LD datePosted, else a date after 'posted on' etc."""
+    for tag in soup.find_all("script", type="application/ld+json"):
+        m = re.search(r'"datePosted"\s*:\s*"([^"]+)"', tag.string or tag.get_text() or "")
+        if m:
+            d = _parse_past_date(m.group(1))
+            if d:
+                return d
+    lowered = text.lower()
+    for trig in POSTED_TRIGGERS:
+        i = lowered.find(trig)
+        if i >= 0:
+            window = text[i + len(trig): i + len(trig) + 60]
+            for pat in DATE_PATTERNS:
+                m = pat.search(window)
+                if m:
+                    d = _parse_past_date(m.group(0))
+                    if d:
+                        return d
+    return None
+
+
+def looks_stale(*texts: str) -> bool:
+    """Only past years mentioned (e.g. 'Call for papers 2023') and no current/future year."""
+    years = [int(y) for t in texts for y in re.findall(r"\b(20\d\d)\b", t or "")]
+    return bool(years) and max(years) < _today_utc().year
+
+
 def fetch_detail(url: str, want_apc: bool = False):
-    """One page request returning (deadline|None, apc status). Called only
-    for NEW items."""
+    """One page request -> (deadline|None, apc, state). state: 'ok', 'closed'
+    (page says closed/awarded), 'stale' (old posting date or only past years
+    mentioned, and no deadline) or 'error' (could not fetch)."""
     try:
         resp = SESSION.get(url, timeout=config.REQUEST_TIMEOUT_SECONDS)
         resp.raise_for_status()
     except requests.RequestException as exc:
         log.debug("detail fetch failed %s: %s", url, exc)
-        return None, ("unknown" if want_apc else "")
+        return None, ("unknown" if want_apc else ""), "error"
     soup = BeautifulSoup(resp.text, "html.parser")
     text = soup.get_text(" ", strip=True)
     deadline = find_deadline_structured(soup) or find_deadline_in_text(text)
-    return deadline, (detect_apc(text[:300000]) if want_apc else "")
+    apc = detect_apc(text[:300000]) if want_apc else ""
+    state = "ok"
+    if CLOSED_RE.search(text[:6000]):
+        state = "closed"
+    elif not deadline:
+        posted = find_posted_date(soup, text[:200000])
+        if posted and (_today_utc() - posted).days > MAX_POST_AGE_DAYS:
+            state = "stale"
+        elif not posted and looks_stale(text[:2500]):
+            state = "stale"
+    return deadline, apc, state
 
 
 # ---------------------------------------------------------------------------
@@ -473,6 +534,8 @@ def _web_queries():
     year = str(_today_utc().year)
     for q in getattr(config, "ACADEMIC_WEB_QUERIES", []):
         combos.append((q.format(year=year), "Academic"))
+    for q in getattr(config, "TENDER_WEB_QUERIES", []):
+        combos.append((q.format(year=year), "Tender"))
     for q in getattr(config, "GRANT_WEB_QUERIES", []):
         combos.append((q.format(year=year), "Grant (relevant)"))
     if not combos:
@@ -664,6 +727,65 @@ def save_state(state: dict) -> None:
         json.dump(state, f, indent=1, sort_keys=True)
 
 
+def deadline_verdict(it: dict, today) -> str:
+    """'ok' or why the item must not be reported. Hard rule: a deadline
+    before the run date is never reported. Tenders/grants/CFPs/consultancies
+    must have a verified future deadline unless the source is rolling."""
+    d = it.get("deadline")
+    if d:
+        return "expired" if d < today else "ok"
+    if it.get("_detail") in ("closed", "stale"):
+        return it["_detail"]
+    if looks_stale(it.get("title", ""), it.get("snippet", "")):
+        return "stale"
+    if it.get("category") in getattr(config, "REQUIRE_DEADLINE_CATEGORIES", []) and not it.get("rolling"):
+        return "no_deadline"
+    return "ok"
+
+
+def prune_log() -> int:
+    """Move rows that are expired or junk out of the live log into the archive,
+    so the dashboard and log never show a deadline before today."""
+    if not LOG_CSV_PATH.exists():
+        return 0
+    today = _today_utc()
+    keep, gone = [], []
+    with open(LOG_CSV_PATH, newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    for r in rows:
+        dl = (r.get("deadline") or "").strip()
+        try:
+            d = datetime.strptime(dl, "%Y-%m-%d").date() if dl else None
+        except ValueError:
+            d = None
+        junk = (" " in (r.get("url") or "").strip()
+                or re.search(r"award|cancel", r.get("extra") or "", re.I)
+                or (r.get("url") or "").rstrip("/").endswith("brightermonday.co.ke/jobs"))
+        try:
+            age = (today - datetime.strptime((r.get("found_at") or "")[:10], "%Y-%m-%d").date()).days
+        except ValueError:
+            age = 0
+        stale = not d and (looks_stale(r.get("title", ""))
+                           or age > MAX_POST_AGE_DAYS
+                           or (r.get("category") in getattr(config, "REQUIRE_DEADLINE_CATEGORIES", [])
+                               and "DOAJ" not in (r.get("extra") or "")
+                               and "linkedin.com" not in (r.get("url") or "")))
+        (gone if (d and d < today) or junk or stale else keep).append(r)
+    if gone:
+        arch = LOG_CSV_PATH.with_name("opportunities_archive.csv")
+        new = not arch.exists()
+        with open(arch, "a", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=CSV_FIELDS, extrasaction="ignore")
+            if new:
+                w.writeheader()
+            w.writerows(gone)
+        with open(LOG_CSV_PATH, "w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=CSV_FIELDS, extrasaction="ignore")
+            w.writeheader()
+            w.writerows(keep)
+    return len(gone)
+
+
 def append_to_log(items: list) -> None:
     exists = LOG_CSV_PATH.exists()
     with open(LOG_CSV_PATH, "a", newline="", encoding="utf-8") as f:
@@ -762,6 +884,9 @@ def send_email_digest(items: list, alerts: list) -> None:
 
 def main() -> int:
     ensure_csv_schema()
+    pruned = prune_log()
+    if pruned:
+        log.info("Archived %d expired/closed row(s) from the live log", pruned)
     state = load_state()
     seen = state["seen"]
     now_s = _today_utc().isoformat()
@@ -833,18 +958,29 @@ def main() -> int:
     if need_detail:
         with ThreadPoolExecutor(max_workers=config.MAX_WORKERS) as pool:
             results = pool.map(lambda i: fetch_detail(i["url"], wants_apc(i)), need_detail)
-            for it, (d, apc) in zip(need_detail, results):
+            for it, (d, apc, state_) in zip(need_detail, results):
+                it["_detail"] = state_
                 if d and not it.get("deadline"):
                     it["deadline"] = d
                 if apc:
                     it["apc"] = apc
-
-    today, final, expired, apc_dropped = _today_utc(), [], 0, 0
+    checked = {id(i) for i in need_detail}
+    unchecked_needed = [] if not config.CHECK_DEADLINES_ON_DETAIL_PAGES else [i for i in new if (not i.get("deadline") or wants_apc(i))
+                        and "linkedin.com" not in i["url"] and id(i) not in checked]
+    today, final, expired, apc_dropped, no_dl = _today_utc(), [], 0, 0, 0
+    deferred = {id(i) for i in unchecked_needed} | {id(i) for i in new if i.get("_detail") == "error"}
     for it in new:
-        for k in it.pop("_keys"):
-            seen[k] = now_s  # mark seen either way: expired items are never rechecked
-        if it.get("deadline") and it["deadline"] < today:
-            expired += 1
+        keys = it.pop("_keys")
+        if id(it) in deferred:
+            continue  # not checked yet (budget/network): retry next run instead of losing it
+        for k in keys:
+            seen[k] = now_s  # decided either way: never re-fetched
+        verdict = deadline_verdict(it, today)
+        if verdict != "ok":
+            if verdict == "expired":
+                expired += 1
+            else:
+                no_dl += 1
             continue
         if it["category"] == "Academic":
             it["apc"] = it.get("apc") or "unknown"
@@ -858,8 +994,8 @@ def main() -> int:
         final.append(it)
     final.sort(key=lambda i: (-i["score"], CATEGORY_ORDER.index(i["category"])))
 
-    log.info("%d candidate(s) -> %d new, %d expired, %d dropped for APC fees, %d to report (%.1fs); %d auto-discovered board(s) tracked",
-             len(candidates), len(new), expired, apc_dropped, len(final), time.time() - t0, len(state["boards"]))
+    log.info("%d candidate(s) -> %d new, %d expired, %d closed/stale/no-deadline, %d dropped for APC fees, %d to report (%.1fs); %d auto-discovered board(s) tracked",
+             len(candidates), len(new), expired, no_dl, apc_dropped, len(final), time.time() - t0, len(state["boards"]))
 
     if final:
         print("\n" + build_digest(final, []))

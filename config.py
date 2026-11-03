@@ -146,6 +146,18 @@ ACADEMIC_WEB_QUERIES = [
     "IGI Global call for chapters e-learning {year}",
     "Web of Conferences call for papers education {year}",
 ]
+TENDER_WEB_QUERIES = [   # open tenders / EOIs / RFPs (deadline-bound)
+    "request for proposals e-learning development {year}",
+    "expression of interest instructional design consultancy {year}",
+    "terms of reference e-learning consultant {year}",
+    "tender LMS Moodle development NGO {year}",
+    "call for proposals digital learning platform Africa {year}",
+    "consultancy curriculum digitization e-learning Kenya {year}",
+    "request for quotation online course development {year}",
+]
+WORLDBANK_TERMS = ["instructional design", "e-learning", "learning management system", "digital learning",
+                   "online course", "education technology", "distance learning", "curriculum", "training platform",
+                   "teacher training", "capacity building training", "learning platform"]
 GRANT_WEB_QUERIES = [
     "grant call e-learning Africa {year}",
     "funding opportunity digital learning Kenya {year}",
@@ -215,7 +227,11 @@ REQUIRE_REMOTE_SIGNAL = False
 # found at all, it's kept but flagged "deadline not found — verify manually".
 # ---------------------------------------------------------------------------
 CHECK_DEADLINES_ON_DETAIL_PAGES = True
-MAX_DETAIL_PAGE_CHECKS_PER_RUN = 80  # only NEW items are checked, so this is rarely hit
+# Never report these without a verified future deadline (sources marked "rolling": True are exempt).
+# Jobs may lack a deadline but are dropped if the page says closed or the posting is old.
+REQUIRE_DEADLINE_CATEGORIES = ["Consultancy", "Grant", "Academic"]
+MAX_POST_AGE_DAYS = 75
+MAX_DETAIL_PAGE_CHECKS_PER_RUN = 150  # only NEW items are checked, so this is rarely hit
 
 # ---------------------------------------------------------------------------
 # OPEN-WEB SEARCH (reaches institutional sites you haven't hardcoded)
@@ -238,7 +254,7 @@ WEB_SEARCH_TOPICS = [
     "digital learning",
 ]
 WEB_SEARCH_CATEGORY_MODIFIERS = ["consultancy NGO", "vacancy NGO", "grant education"]
-MAX_WEB_SEARCH_QUERIES_PER_RUN = 10  # queries rotate daily so every combination gets covered
+MAX_WEB_SEARCH_QUERIES_PER_RUN = 14  # queries rotate daily so every combination gets covered
 MAX_RESULTS_PER_WEB_SEARCH_QUERY = 8
 
 # ---------------------------------------------------------------------------
@@ -334,7 +350,25 @@ SOURCES = [
     # "terms": [...] (override ORG_SEARCH_TERMS).
     # ATS boards found on these pages are auto-discovered and scanned too.
     # -----------------------------------------------------------------------
-    {"name": "World Bank Procurement (consulting notices)", "type": "worldbank"},
+    {"name": "World Bank Procurement (open consulting notices)", "type": "worldbank"},
+    {"name": "ReliefWeb site search (jobs)", "type": "org_site", "search_url": "https://reliefweb.int/jobs?search={q}&page={p}",
+     "pages": 2, "terms": ["instructional design", "e-learning", "learning management system", "digital learning"], "max_queries": 4,
+     "css_selector": "a"},
+    {"name": "ReliefWeb site search (training/other)", "type": "org_site", "search_url": "https://reliefweb.int/updates?search={q}&advanced-search=%28F10%29",
+     "terms": ["call for proposals e-learning", "call for proposals digital learning", "request for proposals instructional design"], "max_queries": 3,
+     "require_signal": True},
+    {"name": "Impactpool", "type": "org_site", "url": "https://www.impactpool.org/search?q=instructional+design", "render": True},
+    {"name": "UN Careers", "type": "org_site", "url": "https://careers.un.org/jobopening", "render": True},
+    {"name": "AfDB Procurement", "type": "org_site", "url": "https://www.afdb.org/en/projects-and-operations/procurement", "require_signal": True},
+    {"name": "Kenya Public Tenders (PPIP)", "type": "org_site", "url": "https://tenders.go.ke/tenders", "render": True, "region": "Kenya/Africa", "require_signal": True},
+    {"name": "UNICEF Supply & Procurement Notices", "type": "org_site", "url": "https://www.unicef.org/supply/procurement-notices", "require_signal": True},
+    {"name": "Save the Children Jobs", "type": "org_site", "url": "https://careers.savethechildren.net/", "render": True},
+    {"name": "IRC Careers", "type": "org_site", "url": "https://rescue.csod.com/ux/ats/careersite/1/home?c=rescue", "render": True},
+    {"name": "Mercy Corps Careers", "type": "org_site", "url": "https://www.mercycorps.org/careers", "render": True},
+    {"name": "Amref Health Africa Careers", "type": "org_site", "url": "https://amref.org/careers/", "region": "Kenya/Africa"},
+    {"name": "GIZ Jobs", "type": "org_site", "url": "https://jobs.giz.de/index.php?ac=search_result&search_criterion_keyword%5B%5D=e-learning", "render": True},
+    {"name": "Devex Funding (grants)", "type": "org_site", "url": "https://www.devex.com/funding/r?query=education", "render": True,
+     "category": "Grant", "topic_only": True},
     {"name": "UNDP Jobs", "type": "org_site", "url": "https://jobs.undp.org/cj_view_jobs.cfm"},
     {"name": "UNICEF Jobs", "type": "org_site", "url": "https://jobs.unicef.org/en-us/listing/", "render": True},
     {"name": "UNESCO Careers", "type": "org_site", "url": "https://careers.unesco.org/", "render": True},
@@ -349,10 +383,11 @@ SOURCES = [
      "terms": ["edtech", "digital learning", "ai in education", "e-learning", "teacher training"], "max_queries": 5,
      "category": "Grant", "topic_only": True},
     # --- academic: journals with no APC, conference/paper calls, book-chapter calls ---
-    {"name": "DOAJ — journals with no APC", "type": "doaj"},
+    {"name": "DOAJ — journals with no APC", "type": "doaj", "rolling": True},
     {"name": "WikiCFP — calls for papers", "type": "org_site", "search_url": "http://www.wikicfp.com/cfp/servlet/tool.search?q={q}&year=f",
-     "terms": ["e-learning", "educational technology", "ai in education", "distance learning", "learning analytics"],
-     "max_queries": 5, "category": "Academic", "topic_only": True},
+     "terms": ["e-learning", "educational technology", "ai in education", "distance learning", "learning analytics",
+               "online learning", "technology enhanced learning", "digital education"],
+     "max_queries": 8, "category": "Academic", "link_contains": "event.showcfp", "link_exclude": ["copyright"]},
     # EasyChair topic-scoped CFP lists (confirmed to exist): every link is a call
     {"name": "EasyChair CFPs — e-learning", "type": "org_site", "url": "https://easychair.org/cfp/topic.cgi?tid=2014",
      "category": "Academic", "link_contains": "/cfp/", "link_exclude": ["topic.cgi", "areas.cgi", "/cfp/index"]},
@@ -431,16 +466,17 @@ MAX_DYNAMIC_BOARDS = 60  # auto-discovered ATS boards kept under watch
 WEB_SEARCH_SITE_FILTERS = [
     "site:myworkdayjobs.com", "site:boards.greenhouse.io", "site:jobs.lever.co",
     "site:apply.workable.com", "site:jobs.smartrecruiters.com", "site:recruitee.com",
+    "site:ungm.org", "site:devex.com/jobs", "site:impactpool.org", "site:reliefweb.int/job",
     "site:linkedin.com/jobs/view",   # public LinkedIn job pages as indexed by the search engine
 ]
-WEB_SEARCH_SITE_TERMS = ["instructional design", "e-learning consultant", "moodle LMS"]
+WEB_SEARCH_SITE_TERMS = ["instructional design", "e-learning consultant", "moodle LMS", "digital learning"]
 
 # Optional Brave Search API (free tier ~2,000 queries/month): far more
 # reliable from cloud IPs than scraping DuckDuckGo, and returns fresh results.
 # Get a key at https://brave.com/search/api/ and add it as the BRAVE_API_KEY
 # repo secret. Without it the scanner falls back to DuckDuckGo.
 BRAVE_API_KEY_ENV = "BRAVE_API_KEY"
-BRAVE_MAX_QUERIES_PER_RUN = 30
+BRAVE_MAX_QUERIES_PER_RUN = 45
 
 # ---------------------------------------------------------------------------
 # OUTPUT
