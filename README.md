@@ -268,3 +268,15 @@ same URL twice, but if a site changes a job's URL slightly, it may look
 - **Better web search:** add a `BRAVE_API_KEY` secret (free tier) to replace DuckDuckGo scraping.
 - Organisation URLs in `config.SOURCES` are seeds. Check the first run's source-health lines
   and fix or remove any that fail.
+
+## Academic opportunities and relevant grants
+
+- **Academic** category: calls for papers, book chapters, special issues, conference CFPs and
+  journals, matched on your research themes (`ACADEMIC_TOPICS`) plus a call signal.
+- **No-APC rule:** each academic page is checked for publication fees. A stated APC amount
+  drops the item (`EXCLUDE_APC_FEES`); "no fees / diamond open access" earns a score boost;
+  otherwise it is flagged "APC unknown, verify". This is text matching, not a guarantee.
+- **DOAJ source** lists open-access journals with no APC on your themes.
+- **Grants** now also match on topic + funding signal (`GRANT_TOPICS`), not just job keywords.
+- Dashboard: Academic filter and a "confirmed no-APC only" switch.
+- The CSV gains an `apc` column; existing rows migrate on the next run.

@@ -25,7 +25,7 @@ assumed to work until a run's source-health report says so.
 
 import re
 import threading
-from urllib.parse import quote_plus, urljoin
+from urllib.parse import quote, quote_plus, urljoin
 
 from bs4 import BeautifulSoup
 from dateutil import parser as dateparser
@@ -101,6 +101,8 @@ def build_fetchers(core) -> dict:
         it["location"] = core.classify_location(f"{title} {loc}")
         if src.get("region") and it["location"] == "Elsewhere/unconfirmed":
             it["location"] = src["region"]
+        if src.get("category"):  # source lists one kind of thing (e.g. only CFPs)
+            it["category"] = src["category"]
         return it
 
     def jget(h, url, **kw):
@@ -235,6 +237,31 @@ def build_fetchers(core) -> dict:
                                 snippet=kind, extra=kind))
         return fin(items, h)
 
+    # ---- DOAJ: journals that charge no APC ---------------------------------
+
+    def doaj(src):
+        """Directory of Open Access Journals: only journals with has_apc=false,
+        matched on theme. Each journal is reported once."""
+        h, items, seen = H(), [], set()
+        for term in (src.get("terms") or cfg.ACADEMIC_JOURNAL_TERMS):
+            query = (f'bibjson.apc.has_apc:false AND (bibjson.keywords:"{term}" '
+                     f'OR bibjson.title:"{term}")')
+            data = jget(h, "https://doaj.org/api/search/journals/" + quote(query, safe=""),
+                        params={"pageSize": src.get("page_size", 25)})
+            for r in (data or {}).get("results", []):
+                h["raw"] += 1
+                bj = r.get("bibjson") or {}
+                title = bj.get("title", "")
+                home = next((l.get("url") for l in bj.get("link", []) if l.get("type") == "homepage"), "")
+                if not title or not home or r.get("id") in seen:
+                    continue
+                seen.add(r.get("id"))
+                pub = (bj.get("publisher") or {}).get("name", "")
+                it = mk(src, f"{title} (journal, no APC)", home, extra=f"DOAJ journal, no APC · {pub}".strip(" ·"))
+                it["category"], it["apc"], it["location"] = "Academic", "no-fee", "Journal"
+                items.append(it)
+        return fin(items, h)
+
     # ---- Any organisation page -------------------------------------------
 
     def render(url, src):
@@ -268,6 +295,7 @@ def build_fetchers(core) -> dict:
     def org_site(src):
         h, items, seen = H(), [], set()
         qs = terms(src)
+        match = core.topic_matches if src.get("topic_only") else core.matches_keywords
         urls = [src["search_url"].format(q=quote_plus(q)) for q in qs] if "search_url" in src else [src["url"]]
 
         for u in urls:
@@ -286,7 +314,7 @@ def build_fetchers(core) -> dict:
                 h["raw"] += 1
                 if not href.startswith("http") or core.is_blocked_url(href) or (text, href) in seen:
                     continue
-                if not core.matches_keywords(text):
+                if not match(text):
                     continue
                 if src.get("require_signal") and not core.has_opportunity_signal(text):
                     continue
@@ -303,7 +331,7 @@ def build_fetchers(core) -> dict:
                     t, href = r.get("title", ""), r.get("url", "")
                     if (t, href) in seen or not href:
                         continue
-                    if core.matches_keywords(t) and core.has_opportunity_signal(t):
+                    if match(t) and core.has_opportunity_signal(t):
                         seen.add((t, href))
                         items.append(mk(src, t, href))
         if h["raw"] > 0 and h["error"] and items:
@@ -314,5 +342,5 @@ def build_fetchers(core) -> dict:
     return {
         "greenhouse": greenhouse, "lever": lever, "smartrecruiters": smartrecruiters,
         "workable": workable, "recruitee": recruitee, "workday": workday,
-        "worldbank": worldbank, "org_site": org_site,
+        "worldbank": worldbank, "org_site": org_site, "doaj": doaj,
     }

@@ -86,6 +86,77 @@ OPPORTUNITY_SIGNAL_EXTRA_KEYWORDS = [
 ]
 
 # ---------------------------------------------------------------------------
+# ACADEMIC: calls for papers / book chapters / special issues / journals
+# An item is academic when it has a topic from ACADEMIC_TOPICS AND a signal
+# from ACADEMIC_SIGNAL_KEYWORDS. Items whose page states a publication fee
+# (APC) are dropped; "no APC" ones are boosted; the rest are flagged
+# "APC unknown - verify" because most calls never say either way.
+# ---------------------------------------------------------------------------
+ACADEMIC_SIGNAL_KEYWORDS = [
+    "call for papers", "call for chapters", "call for book chapters",
+    "call for abstracts", "call for submissions", "call for contributions",
+    "special issue", "book chapter", "edited volume", "edited book",
+    "chapter proposal", "manuscript submission", "paper submission",
+]
+ACADEMIC_TOPICS = [
+    "open and distance learning", "open distance and e-learning", "odel",
+    "e-learning", "elearning", "educational technology", "education technology",
+    "learning technology", "technology-enhanced learning", "digital learning",
+    "digital education", "ai in education", "artificial intelligence in education",
+    "generative ai", "adaptive learning", "learning analytics", "instructional design",
+    "learning design", "mooc", "blended learning", "online learning",
+    "higher education", "digital equity", "global south", "sub-saharan",
+    "metacognition", "universal design for learning", "stem education",
+    "moodle", "learning management",
+]
+EXCLUDE_APC_FEES = True      # drop academic items whose page states an APC amount
+ACADEMIC_JOURNAL_TERMS = [   # DOAJ search: journals with NO APC on these themes
+    "e-learning", "educational technology", "distance education",
+    "open learning", "technology enhanced learning", "learning analytics",
+    "higher education", "instructional design", "online learning",
+]
+
+# ---------------------------------------------------------------------------
+# RELEVANT GRANTS: topic AND a funding signal (beyond GRANT_KEYWORDS above)
+# ---------------------------------------------------------------------------
+GRANT_TOPICS = [
+    "edtech", "education technology", "educational technology", "e-learning",
+    "digital learning", "digital education", "ai in education",
+    "artificial intelligence in education", "learning technology", "digital skills",
+    "digital literacy", "open educational resources", "teacher training",
+    "education innovation", "moocs", "distance learning", "ai readiness",
+    "learning management", "moodle", "open and distance",
+]
+GRANT_EXTRA_SIGNALS = [
+    "open call", "call for applications", "call for concept notes", "concept note",
+    "funding call", "innovation challenge", "research grant", "grants for",
+    "grant programme", "grant program", "fellowship", "research funding",
+]
+
+# Web queries for academic and grant opportunities ({year} = current year)
+ACADEMIC_WEB_QUERIES = [
+    "call for book chapters e-learning {year}",
+    "call for chapters artificial intelligence in education {year}",
+    "call for chapters open and distance learning Africa",
+    "call for papers special issue educational technology no APC",
+    "call for papers special issue AI in higher education {year}",
+    "diamond open access journal educational technology call for papers",
+    "call for papers learning analytics special issue {year}",
+    "Springer call for chapters education technology {year}",
+    "IGI Global call for chapters e-learning {year}",
+    "Web of Conferences call for papers education {year}",
+]
+GRANT_WEB_QUERIES = [
+    "grant call e-learning Africa {year}",
+    "funding opportunity digital learning Kenya {year}",
+    "call for proposals AI in education {year}",
+    "research grant educational technology Africa {year}",
+    "edtech grant nonprofit Africa {year}",
+    "fellowship open and distance learning {year}",
+]
+MAX_ITEMS_IN_EMAIL = 40  # top-scored items go in the email; the rest stay on the dashboard
+
+# ---------------------------------------------------------------------------
 # NOISE FILTERING FOR OPEN-WEB SEARCH
 # The open web search (below) will happily return vendor product pages,
 # blog posts, and "best LMS for nonprofits" listicles that mention your
@@ -274,7 +345,16 @@ SOURCES = [
     {"name": "UNGM Notices", "type": "org_site", "url": "https://www.ungm.org/Public/Notice", "render": True},
     {"name": "Medair Tenders", "type": "org_site", "url": "https://medair.org/tenders/"},
     {"name": "NGO Tenders — ID consultants", "type": "org_site", "url": "https://ngotenders.net/instructional-design-consultants/"},
-    {"name": "fundsforNGOs", "type": "org_site", "search_url": "https://www.fundsforngos.org/?s={q}", "require_signal": True},
+    {"name": "fundsforNGOs (grants)", "type": "org_site", "search_url": "https://www.fundsforngos.org/?s={q}",
+     "terms": ["edtech", "digital learning", "ai in education", "e-learning", "teacher training"], "max_queries": 5,
+     "category": "Grant", "topic_only": True},
+    # --- academic: journals with no APC, conference/paper calls, book-chapter calls ---
+    {"name": "DOAJ — journals with no APC", "type": "doaj"},
+    {"name": "WikiCFP — calls for papers", "type": "org_site", "search_url": "http://www.wikicfp.com/cfp/servlet/tool.search?q={q}&year=f",
+     "terms": ["e-learning", "educational technology", "ai in education", "distance learning", "learning analytics"],
+     "max_queries": 5, "category": "Academic", "topic_only": True},
+    {"name": "IGI Global — calls for chapters", "type": "org_site", "url": "https://www.igi-global.com/publish/call-for-papers/",
+     "render": True, "category": "Academic", "topic_only": True},
     {"name": "BrighterMonday Kenya", "type": "org_site", "search_url": "https://www.brightermonday.co.ke/jobs?q={q}", "region": "Kenya/Africa"},
     {"name": "Corporate Staffing Kenya", "type": "org_site", "search_url": "https://www.corporatestaffing.co.ke/?s={q}", "region": "Kenya/Africa"},
     {"name": "KENET", "type": "org_site", "url": "https://www.kenet.or.ke", "wp_search": True, "region": "Kenya/Africa"},
@@ -300,7 +380,9 @@ SEEN_RETENTION_DAYS = 365  # forget dedup entries older than this
 # consultancies and grants above jobs, onsite-elsewhere roles pushed down.
 # ---------------------------------------------------------------------------
 HOME_REGION_KEYWORDS = ["kenya", "nairobi", "east africa", "africa", "sub-saharan"]
-CATEGORY_SCORE = {"Consultancy": 3, "Grant": 2, "Job": 1, "Uncertain": 0}
+CATEGORY_SCORE = {"Consultancy": 3, "Academic": 3, "Grant": 2, "Job": 1, "Uncertain": 0}
+LOCATION_NEUTRAL_CATEGORIES = ["Academic"]  # location is irrelevant for papers/journals
+APC_NO_FEE_SCORE = 3                        # explicit "no APC / free to publish"
 REMOTE_SCORE = 3
 HOME_REGION_SCORE = 3
 ONSITE_ELSEWHERE_PENALTY = -2
@@ -309,6 +391,10 @@ PREFERRED_TERMS = {          # term -> points (each counted once)
     "instructional design": 1, "learning experience": 1,
     "digital learning": 1, "ai in education": 2, "e-learning": 1, "elearning": 1,
     "lead": 1, "senior": 1, "consultant": 1,
+    # research profile: target publishers and core themes
+    "springer": 2, "igi global": 2, "aect": 2, "web of conferences": 2,
+    "open and distance": 2, "odel": 2, "adaptive learning": 2, "global south": 2,
+    "sub-saharan": 1, "africa": 1, "special issue": 1, "call for chapters": 1,
 }
 TOP_PICK_MIN_SCORE = 6
 

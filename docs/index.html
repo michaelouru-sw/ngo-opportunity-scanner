@@ -39,8 +39,8 @@ main{max-width:1100px;margin:0 auto;padding:16px 16px 60px}
 .title:hover{color:var(--acc);text-decoration:underline}
 .meta{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;color:var(--mute);font-size:12.5px;grid-column:1}
 .badge{background:var(--chip);border-radius:999px;padding:1px 9px;font-size:12px;color:var(--ink)}
-.b-Consultancy{background:#dbe8ff;color:#143a8a}.b-Grant{background:#e1f5e9;color:#0b5a38}.b-Job{background:#fdeccc;color:#7a4607}.b-Uncertain{background:var(--chip)}
-@media (prefers-color-scheme:dark){.b-Consultancy{background:#1d2f57;color:#b8cdfd}.b-Grant{background:#16382a;color:#a6e6c5}.b-Job{background:#40300f;color:#f5d59b}}
+.b-Consultancy{background:#dbe8ff;color:#143a8a}.b-Grant{background:#e1f5e9;color:#0b5a38}.b-Job{background:#fdeccc;color:#7a4607}.b-Academic{background:#efe3fb;color:#4b2a7a}.apc-ok{color:var(--good);font-weight:600}.apc-q{color:var(--warn)}.b-Uncertain{background:var(--chip)}
+@media (prefers-color-scheme:dark){.b-Consultancy{background:#1d2f57;color:#b8cdfd}.b-Grant{background:#16382a;color:#a6e6c5}.b-Job{background:#40300f;color:#f5d59b}.b-Academic{background:#35254f;color:#d9c3f5}}
 .score{font-weight:700}
 .dl-soon{color:var(--bad);font-weight:600}.dl-mid{color:var(--warn);font-weight:600}.dl-ok{color:var(--good)}
 .acts{grid-column:2;grid-row:1/3;display:flex;gap:6px;align-items:flex-start}
@@ -79,6 +79,7 @@ main{max-width:1100px;margin:0 auto;padding:16px 16px 60px}
       <label><input type="checkbox" id="onlyDl"> Has deadline</label>
       <label><input type="checkbox" id="hideClosed" checked> Hide closed</label>
       <label><input type="checkbox" id="remoteOnly"> Remote / Kenya-Africa only</label>
+      <label><input type="checkbox" id="noApc"> Academic: confirmed no-APC only</label>
       <button id="reset">Reset</button>
       <span class="sub" id="count"></span>
     </div>
@@ -139,7 +140,7 @@ function opts(sel, values, label){
 function init(rows){
   data = rows.map(prep);
   const uniq = k => [...new Set(data.map(r=>r[k]).filter(Boolean))].sort();
-  opts($("cat"), ["Consultancy","Grant","Job","Uncertain"], "All");
+  opts($("cat"), ["Consultancy","Academic","Grant","Job","Uncertain"], "All");
   opts($("loc"), uniq("location"), "All");
   opts($("src"), uniq("source"), "All");
   const latest = data.reduce((m,r)=> r.when>m?r.when:m, new Date(0));
@@ -159,7 +160,8 @@ function matches(r){
   if(r.score < +$("min").value) return false;
   if($("onlyDl").checked && r.days===null) return false;
   if($("hideClosed").checked && r.days!==null && r.days<0) return false;
-  if($("remoteOnly").checked && !(r.location==="Remote"||r.location==="Kenya/Africa")) return false;
+  if($("remoteOnly").checked && r.category!=="Academic" && !(r.location==="Remote"||r.location==="Kenya/Africa")) return false;
+  if($("noApc").checked && !(r.category==="Academic" && r.apc==="no-fee")) return false;
   return true;
 }
 
@@ -224,7 +226,7 @@ function render(){
       <div class="meta">
         <span class="badge b-${esc(r.category)}">${esc(r.category)}</span>
         <span class="score">${r.score}</span>
-        <span>${esc(r.location)}</span> · ${dlHtml(r)} · <span>${esc(r.source)}</span>
+        ${r.category==="Academic"?(r.apc==="no-fee"?'<span class="apc-ok">no APC ✓</span>':'<span class="apc-q">APC unknown — verify</span>')+" · ":`<span>${esc(r.location)}</span> · `}${dlHtml(r)} · <span>${esc(r.source)}</span>
         · <span>found ${isNaN(r.when)?"?":r.when.toLocaleDateString()}</span>
         ${r.extra?`· <span>${esc(r.extra)}</span>`:""}
       </div></div>`;
@@ -253,7 +255,7 @@ async function loadHealth(){
 // ---- export ----
 function exportCSV(){
   const rows=sortRows(data.filter(matches));
-  const cols=["score","category","location","deadline","source","title","url","found_at"];
+  const cols=["score","category","location","apc","deadline","source","title","url","found_at"];
   const cell=v=>{v=String(v??"");return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
   // neutralise spreadsheet formula injection from scraped titles
   const safe=v=>/^[=+\-@]/.test(String(v))?"'"+v:v;
@@ -263,9 +265,9 @@ function exportCSV(){
 }
 
 // ---- wiring ----
-["q","cat","loc","src","sort","min","onlyDl","hideClosed","remoteOnly"].forEach(id=>$(id).addEventListener("input",render));
+["q","cat","loc","src","sort","min","onlyDl","hideClosed","remoteOnly","noApc"].forEach(id=>$(id).addEventListener("input",render));
 $("reset").onclick=()=>{["q","cat","loc","src"].forEach(i=>$(i).value="");$("sort").value="score";$("min").value=-5;
-  $("onlyDl").checked=false;$("hideClosed").checked=true;$("remoteOnly").checked=false;view="inbox";render();};
+  $("onlyDl").checked=false;$("hideClosed").checked=true;$("remoteOnly").checked=false;$("noApc").checked=false;view="inbox";render();};
 $("healthbtn").onclick=()=>{$("health").classList.toggle("hidden");};
 $("exportbtn").onclick=exportCSV;
 $("runlink").href="https://github.com/"+REPO+"/actions/workflows/daily-scan.yml";

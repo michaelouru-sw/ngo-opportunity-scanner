@@ -59,13 +59,15 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 LOG_CSV_PATH = SCRIPT_DIR / config.LOG_CSV_PATH
 SEEN_STORE_PATH = SCRIPT_DIR / config.SEEN_STORE_PATH
 
-CSV_FIELDS = [
+CSV_FIELDS_V2 = [
     "found_at", "category", "score", "source", "title", "url",
     "location", "deadline", "extra",
 ]
-CATEGORY_ORDER = ["Consultancy", "Grant", "Job", "Uncertain"]
+CSV_FIELDS = CSV_FIELDS_V2 + ["apc"]
+CATEGORY_ORDER = ["Consultancy", "Academic", "Grant", "Job", "Uncertain"]
 CATEGORY_HEADINGS = {
     "Consultancy": "CONSULTANCIES (individual or firm)",
+    "Academic": "ACADEMIC: calls for papers, chapters, journals",
     "Grant": "GRANTS",
     "Job": "JOBS",
     "Uncertain": "UNCERTAIN CATEGORY (please check manually)",
@@ -78,6 +80,9 @@ DEADLINE_TRIGGERS = [
     "application deadline", "submission deadline", "closing date", "deadline",
     "apply by", "due date", "closes on", "applications close", "closing on",
     "last date", "applications due", "apply before",
+    "abstract submission deadline", "abstract deadline", "abstracts due",
+    "paper submission deadline", "manuscript due", "manuscripts due", "submissions due",
+    "submissions close", "deadline for submission", "submit by",
 ]
 _MONTH = r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?"
 DATE_PATTERNS = [
@@ -110,8 +115,28 @@ JOB_RE = _compile(config.JOB_KEYWORDS)
 SIGNAL_RE = _compile(
     config.GRANT_KEYWORDS + config.CONSULTANCY_KEYWORDS
     + config.JOB_KEYWORDS + config.OPPORTUNITY_SIGNAL_EXTRA_KEYWORDS
+    + config.ACADEMIC_SIGNAL_KEYWORDS + config.GRANT_EXTRA_SIGNALS
 )
 PREFERRED_RES = [(_compile([t]), pts) for t, pts in config.PREFERRED_TERMS.items()]
+ACADEMIC_RE = _compile(config.ACADEMIC_SIGNAL_KEYWORDS)
+ACAD_TOPIC_RE = _compile(config.ACADEMIC_TOPICS)
+GRANT_TOPIC_RE = _compile(config.GRANT_TOPICS)
+GRANT_SIGNAL_RE = _compile(config.GRANT_KEYWORDS + config.GRANT_EXTRA_SIGNALS)
+
+# APC detection (best effort). "No fee" wins over "fee": hybrid pages often
+# say "no APC for the subscription route; OA option costs $X".
+APC_NO_FEE_RE = re.compile(
+    r"\bno(?!\s+(?:later|longer|more|less|earlier))\b[^.]{0,40}?"
+    r"\b(?:apcs?|article[- ]processing[- ]charges?|publication[- ]fees?|submission[- ]fees?|"
+    r"author[- ]fees?|publication[- ]charges?|fees?)\b"
+    r"|free of charge|free to (?:publish|authors?)|diamond open access|zero apc"
+    r"|without (?:any )?(?:apcs?|fees|charges)|(?:does|do) not charge|no cost to (?:the )?authors?",
+    re.I)
+_CUR = r"(?:[$€£]|usd|eur|gbp|chf)\s?\d"
+APC_FEE_RE = re.compile(
+    r"(?:\bapcs?\b|article[- ]processing[- ]charges?|publication[- ]fees?|open[- ]access[- ]fees?)[^.]{0,80}?" + _CUR
+    + r"|" + _CUR + r"[\d,.]*[^.]{0,60}?(?:\bapcs?\b|article[- ]processing[- ]charge|publication[- ]fee)",
+    re.I)
 
 
 def make_session() -> requests.Session:
@@ -134,13 +159,41 @@ SESSION = make_session()
 # Text helpers
 # ---------------------------------------------------------------------------
 
-def matches_keywords(text: str) -> bool:
+def topic_matches(text: str) -> bool:
+    """Topic only (no signal word needed): for sources that already list
+    only calls, e.g. a conference-CFP index."""
     if not text:
         return False
     lowered = text.lower()
     if EXCLUDE_RE and EXCLUDE_RE.search(lowered):
         return False
-    return bool(KEYWORD_RE and KEYWORD_RE.search(lowered))
+    return any(rx and rx.search(lowered) for rx in (KEYWORD_RE, ACAD_TOPIC_RE, GRANT_TOPIC_RE))
+
+
+def matches_keywords(text: str) -> bool:
+    """Job keywords, OR academic topic + call signal, OR grant topic + funding signal."""
+    if not text:
+        return False
+    lowered = text.lower()
+    if EXCLUDE_RE and EXCLUDE_RE.search(lowered):
+        return False
+    if KEYWORD_RE and KEYWORD_RE.search(lowered):
+        return True
+    if ACAD_TOPIC_RE and ACADEMIC_RE and ACAD_TOPIC_RE.search(lowered) and ACADEMIC_RE.search(lowered):
+        return True
+    return bool(GRANT_TOPIC_RE and GRANT_SIGNAL_RE
+                and GRANT_TOPIC_RE.search(lowered) and GRANT_SIGNAL_RE.search(lowered))
+
+
+def detect_apc(text: str) -> str:
+    """'no-fee' (stated free), 'fee' (an APC amount is stated), or 'unknown'."""
+    if not text:
+        return "unknown"
+    if APC_NO_FEE_RE.search(text):
+        return "no-fee"
+    if APC_FEE_RE.search(text):
+        return "fee"
+    return "unknown"
 
 
 def has_remote_signal(text: str) -> bool:
@@ -163,7 +216,9 @@ def classify_opportunity(text: str) -> str:
     if not text:
         return "Uncertain"
     lowered = text.lower()
-    if GRANT_RE and GRANT_RE.search(lowered):
+    if ACADEMIC_RE and ACADEMIC_RE.search(lowered):
+        return "Academic"
+    if GRANT_SIGNAL_RE and GRANT_SIGNAL_RE.search(lowered):
         return "Grant"
     if CONSULT_RE and CONSULT_RE.search(lowered):
         return "Consultancy"
@@ -188,12 +243,16 @@ def score_item(item: dict) -> int:
     text = f"{item.get('title', '')} {item.get('snippet', '')}".lower()
     s = config.CATEGORY_SCORE.get(item.get("category", "Uncertain"), 0)
     loc = item.get("location", "")
-    if loc == "Remote":
+    if item.get("category") in config.LOCATION_NEUTRAL_CATEGORIES:
+        pass
+    elif loc == "Remote":
         s += config.REMOTE_SCORE
     elif loc == "Kenya/Africa":
         s += config.HOME_REGION_SCORE
     else:
         s += config.ONSITE_ELSEWHERE_PENALTY
+    if item.get("apc") == "no-fee":
+        s += config.APC_NO_FEE_SCORE
     for rx, pts in PREFERRED_RES:
         if rx and rx.search(text):
             s += pts
@@ -277,16 +336,19 @@ def find_deadline_structured(soup: BeautifulSoup):
     return None
 
 
-def fetch_deadline(url: str):
-    """Returns the deadline date or None. Called only for NEW items."""
+def fetch_detail(url: str, want_apc: bool = False):
+    """One page request returning (deadline|None, apc status). Called only
+    for NEW items."""
     try:
         resp = SESSION.get(url, timeout=config.REQUEST_TIMEOUT_SECONDS)
         resp.raise_for_status()
     except requests.RequestException as exc:
         log.debug("detail fetch failed %s: %s", url, exc)
-        return None
+        return None, ("unknown" if want_apc else "")
     soup = BeautifulSoup(resp.text, "html.parser")
-    return find_deadline_structured(soup) or find_deadline_in_text(soup.get_text(" ", strip=True))
+    text = soup.get_text(" ", strip=True)
+    deadline = find_deadline_structured(soup) or find_deadline_in_text(text)
+    return deadline, (detect_apc(text[:300000]) if want_apc else "")
 
 
 # ---------------------------------------------------------------------------
@@ -300,7 +362,7 @@ def _item(source, title, url, snippet="", extra="", deadline=None):
         "source": source, "title": title, "url": url,
         "category": classify_opportunity(text),
         "location": classify_location(text),
-        "snippet": snippet, "extra": extra, "deadline": deadline,
+        "snippet": snippet, "extra": extra, "deadline": deadline, "apc": "",
     }
 
 
@@ -408,6 +470,11 @@ def _web_queries():
     for site in getattr(config, "WEB_SEARCH_SITE_FILTERS", []):
         for term in getattr(config, "WEB_SEARCH_SITE_TERMS", []):
             combos.append((f'{site} "{term}"', "ATS site"))
+    year = str(_today_utc().year)
+    for q in getattr(config, "ACADEMIC_WEB_QUERIES", []):
+        combos.append((q.format(year=year), "Academic"))
+    for q in getattr(config, "GRANT_WEB_QUERIES", []):
+        combos.append((q.format(year=year), "Grant (relevant)"))
     if not combos:
         return []
     cap = config.MAX_WEB_SEARCH_QUERIES_PER_RUN
@@ -508,6 +575,17 @@ def ensure_csv_schema() -> int:
     if not rows or rows[0] == CSV_FIELDS:
         return 0
 
+    if rows[0] == CSV_FIELDS_V2:  # previous schema: just add the apc column
+        out = [dict(zip(CSV_FIELDS_V2, r), apc="") for r in rows[1:] if len(r) == len(CSV_FIELDS_V2)]
+        tmp = LOG_CSV_PATH.with_suffix(".csv.tmp")
+        with open(tmp, "w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=CSV_FIELDS)
+            w.writeheader()
+            w.writerows(out)
+        tmp.replace(LOG_CSV_PATH)
+        log.info("Added apc column to %d log row(s).", len(out))
+        return len(out)
+
     out = []
     for r in rows[1:]:
         if not r:
@@ -527,7 +605,7 @@ def ensure_csv_schema() -> int:
         out.append({
             "found_at": found, "category": category, "score": score_item(item),
             "source": source, "title": title, "url": url,
-            "location": item["location"], "deadline": deadline, "extra": extra,
+            "location": item["location"], "deadline": deadline, "extra": extra, "apc": "",
         })
 
     tmp = LOG_CSV_PATH.with_suffix(".csv.tmp")
@@ -618,8 +696,10 @@ def update_health(state: dict, name: str, health: dict, expect_matches: bool = T
 # ---------------------------------------------------------------------------
 
 def _line_detail(it: dict) -> str:
-    bits = [it["location"]]
+    bits = [] if it.get("category") == "Academic" else [it["location"]]  # location is moot for papers
     bits.append(f"deadline {it['deadline'].isoformat()}" if it.get("deadline") else "deadline unknown")
+    if it.get("category") == "Academic":
+        bits.append({"no-fee": "no APC (stated)", "fee": "APC charged"}.get(it.get("apc"), "APC unknown, verify"))
     if it.get("extra"):
         bits.append(it["extra"])
     return " | ".join(bits)
@@ -660,7 +740,11 @@ def send_email_digest(items: list, alerts: list) -> None:
         subject += f" ({len(items)} new, {top} top picks)"
     elif alerts:
         subject = "Opportunity scanner: source health alert"
-    msg = MIMEText(build_digest(items, alerts), "plain", "utf-8")
+    limit = getattr(config, "MAX_ITEMS_IN_EMAIL", 40)
+    body = build_digest(items[:limit], alerts)
+    if len(items) > limit:
+        body += f"\n\n+ {len(items) - limit} more lower-scored item(s): see the dashboard."
+    msg = MIMEText(body, "plain", "utf-8")
     msg["Subject"], msg["From"], msg["To"] = subject, config.EMAIL_FROM, config.EMAIL_TO
     try:
         with smtplib.SMTP(config.SMTP_HOST, config.SMTP_PORT, timeout=config.REQUEST_TIMEOUT_SECONDS) as s:
@@ -738,29 +822,41 @@ def main() -> int:
         it["_keys"] = keys
         new.append(it)
 
-    need_deadline = [i for i in new if not i.get("deadline")] if config.CHECK_DEADLINES_ON_DETAIL_PAGES else []
-    need_deadline = need_deadline[: config.MAX_DETAIL_PAGE_CHECKS_PER_RUN]
-    if need_deadline:
-        with ThreadPoolExecutor(max_workers=config.MAX_WORKERS) as pool:
-            for it, d in zip(need_deadline, pool.map(lambda i: fetch_deadline(i["url"]), need_deadline)):
-                it["deadline"] = d
+    def wants_apc(i):
+        return i["category"] == "Academic" and not i.get("apc")
 
-    today, final, expired = _today_utc(), [], 0
+    need_detail = [i for i in new if not i.get("deadline") or wants_apc(i)] if config.CHECK_DEADLINES_ON_DETAIL_PAGES else []
+    need_detail = need_detail[: config.MAX_DETAIL_PAGE_CHECKS_PER_RUN]
+    if need_detail:
+        with ThreadPoolExecutor(max_workers=config.MAX_WORKERS) as pool:
+            results = pool.map(lambda i: fetch_detail(i["url"], wants_apc(i)), need_detail)
+            for it, (d, apc) in zip(need_detail, results):
+                if d and not it.get("deadline"):
+                    it["deadline"] = d
+                if apc:
+                    it["apc"] = apc
+
+    today, final, expired, apc_dropped = _today_utc(), [], 0, 0
     for it in new:
         for k in it.pop("_keys"):
             seen[k] = now_s  # mark seen either way: expired items are never rechecked
         if it.get("deadline") and it["deadline"] < today:
             expired += 1
             continue
-        if config.REQUIRE_REMOTE_SIGNAL and it["location"] != "Remote":
+        if it["category"] == "Academic":
+            it["apc"] = it.get("apc") or "unknown"
+            if it["apc"] == "fee" and config.EXCLUDE_APC_FEES:
+                apc_dropped += 1
+                continue
+        elif config.REQUIRE_REMOTE_SIGNAL and it["location"] != "Remote":
             continue
         it["score"] = score_item(it)
         it["found_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
         final.append(it)
     final.sort(key=lambda i: (-i["score"], CATEGORY_ORDER.index(i["category"])))
 
-    log.info("%d candidate(s) -> %d new, %d expired, %d to report (%.1fs); %d auto-discovered board(s) tracked",
-             len(candidates), len(new), expired, len(final), time.time() - t0, len(state["boards"]))
+    log.info("%d candidate(s) -> %d new, %d expired, %d dropped for APC fees, %d to report (%.1fs); %d auto-discovered board(s) tracked",
+             len(candidates), len(new), expired, apc_dropped, len(final), time.time() - t0, len(state["boards"]))
 
     if final:
         print("\n" + build_digest(final, []))
