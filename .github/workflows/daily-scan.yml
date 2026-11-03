@@ -14,9 +14,16 @@ on:
 permissions:
   contents: write
 
+# Never let two runs (e.g. a manual run during the scheduled one) race to
+# push the same state files.
+concurrency:
+  group: opportunity-scan
+  cancel-in-progress: false
+
 jobs:
   scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -25,15 +32,18 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip            # skips re-downloading packages every day
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
       - name: Run scanner
         env:
-          # Set this in: Repo Settings -> Secrets and variables -> Actions
-          # -> New repository secret -> name it exactly as below.
+          # Set in: Repo Settings -> Secrets and variables -> Actions
           OPPORTUNITY_SCANNER_SMTP_PASSWORD: ${{ secrets.OPPORTUNITY_SCANNER_SMTP_PASSWORD }}
+          # Registered ReliefWeb appname (https://apidoc.reliefweb.int/). Optional:
+          # without it the ReliefWeb source is skipped and flagged in the digest.
+          RELIEFWEB_APPNAME: ${{ secrets.RELIEFWEB_APPNAME }}
         run: python3 scanner.py
 
       - name: Save results back to the repo
@@ -41,6 +51,9 @@ jobs:
           git config user.name "opportunity-scanner-bot"
           git config user.email "actions@users.noreply.github.com"
           git add opportunities_log.csv seen_opportunities.json
-          # Only commit if something actually changed (new opportunities found)
-          git diff --staged --quiet || git commit -m "Daily scan: $(date -u +'%Y-%m-%d')"
-          git push
+          # Only commit if something actually changed
+          if ! git diff --staged --quiet; then
+            git commit -m "Daily scan: $(date -u +'%Y-%m-%d')"
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+            git push
+          fi

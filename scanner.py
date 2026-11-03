@@ -3,37 +3,47 @@
 eLearning / EdTech / Instructional Design Opportunity Scanner
 ================================================================
 
-Checks GLOBAL fixed sources (ReliefWeb, UNjobs, Devex, Idealist,
-DevelopmentAid) PLUS runs open keyword searches across the wider web
-(via DuckDuckGo's HTML search — no API key needed) so institutional sites
-you haven't hardcoded still get caught. Classifies every match as a Job,
-Consultancy, or Grant, filters out anything already past its deadline,
-and reports only what you haven't seen before — grouped by category in
-both the console output and the email digest.
+Scans fixed global sources (ReliefWeb, UNjobs, Devex, Idealist,
+DevelopmentAid) plus a rotating set of open-web searches, classifies each
+match (Job / Consultancy / Grant), scores it for relevance (remote or
+Kenya/Africa first, consultancies and grants above jobs), drops anything
+past its deadline, and reports only what is genuinely new.
+
+What makes a run fast and accurate:
+  * sources are fetched in parallel, with one pooled session and retries
+  * dedup happens BEFORE deadline checks, so the page-fetch budget is spent
+    only on new items (previously it was burned re-checking old ones)
+  * reposts are caught by title as well as URL (UNjobs re-issues new IDs)
+  * deadlines come from structured data and explicit date patterns, not
+    fuzzy parsing (which could silently invent "today")
+  * every source is health-tracked; silent failures are reported in the digest
 
 USAGE
 -----
     python3 scanner.py
 
-All settings (keywords, sources, categorization, email) live in
-config.py — edit that file, not this one, for day-to-day tweaks.
+All settings live in config.py.
 """
 
 import csv
 import json
 import logging
 import os
+import re
 import smtplib
 import sys
 import time
-from datetime import datetime, timezone
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta, timezone
 from email.mime.text import MIMEText
 from pathlib import Path
-from urllib.parse import quote_plus
+from urllib.parse import parse_qs, unquote, urlparse
 
 import requests
 from bs4 import BeautifulSoup
 from dateutil import parser as dateparser
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 import config
 
@@ -48,452 +58,574 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 LOG_CSV_PATH = SCRIPT_DIR / config.LOG_CSV_PATH
 SEEN_STORE_PATH = SCRIPT_DIR / config.SEEN_STORE_PATH
 
-DEADLINE_TRIGGERS = [
-    "deadline", "closing date", "apply by", "application deadline",
-    "due date", "closes on", "applications close", "submission deadline",
-    "closing on", "last date", "applications due",
+CSV_FIELDS = [
+    "found_at", "category", "score", "source", "title", "url",
+    "location", "deadline", "extra",
 ]
-
+CATEGORY_ORDER = ["Consultancy", "Grant", "Job", "Uncertain"]
+CATEGORY_HEADINGS = {
+    "Consultancy": "CONSULTANCIES (individual or firm)",
+    "Grant": "GRANTS",
+    "Job": "JOBS",
+    "Uncertain": "UNCERTAIN CATEGORY (please check manually)",
+}
+TITLE_DEDUPE_DAYS = getattr(config, "TITLE_DEDUPE_DAYS", 45)
 DDG_HTML_ENDPOINT = "https://html.duckduckgo.com/html/"
+HEALTH_ALERT_AFTER_RUNS = 3  # alert once at 3 empty runs, then weekly
 
-_detail_page_checks_used = 0
-_web_search_queries_used = 0
+DEADLINE_TRIGGERS = [
+    "application deadline", "submission deadline", "closing date", "deadline",
+    "apply by", "due date", "closes on", "applications close", "closing on",
+    "last date", "applications due", "apply before",
+]
+_MONTH = r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?"
+DATE_PATTERNS = [
+    re.compile(r"\b\d{4}-\d{2}-\d{2}\b"),
+    re.compile(rf"\b\d{{1,2}}(?:st|nd|rd|th)?[\s\-/.]+{_MONTH}[\s\-/.,]+\d{{2,4}}\b", re.I),
+    re.compile(rf"\b{_MONTH}\s+\d{{1,2}}(?:st|nd|rd|th)?,?\s+\d{{4}}\b", re.I),
+    re.compile(r"\b\d{1,2}/\d{1,2}/\d{4}\b"),
+]
 
 
 # ---------------------------------------------------------------------------
-# Helpers
+# Compiled matchers (whole-word, so "lms" no longer matches inside "palms")
+# ---------------------------------------------------------------------------
+
+def _compile(terms):
+    parts = sorted({re.escape(t.strip().lower()) for t in terms if t.strip()}, key=len, reverse=True)
+    if not parts:
+        return None
+    # optional trailing "s" so "consultant" also matches "consultants"
+    return re.compile(r"(?<![a-z0-9])(?:" + "|".join(parts) + r")s?(?![a-z0-9])")
+
+
+KEYWORD_RE = _compile(config.KEYWORDS)
+EXCLUDE_RE = _compile(config.EXCLUDE_KEYWORDS)
+REMOTE_RE = _compile(config.REMOTE_SIGNAL_KEYWORDS)
+HOME_RE = _compile(config.HOME_REGION_KEYWORDS)
+GRANT_RE = _compile(config.GRANT_KEYWORDS)
+CONSULT_RE = _compile(config.CONSULTANCY_KEYWORDS)
+JOB_RE = _compile(config.JOB_KEYWORDS)
+SIGNAL_RE = _compile(
+    config.GRANT_KEYWORDS + config.CONSULTANCY_KEYWORDS
+    + config.JOB_KEYWORDS + config.OPPORTUNITY_SIGNAL_EXTRA_KEYWORDS
+)
+PREFERRED_RES = [(_compile([t]), pts) for t, pts in config.PREFERRED_TERMS.items()]
+
+
+def make_session() -> requests.Session:
+    session = requests.Session()
+    retry = Retry(
+        total=config.REQUEST_RETRIES, backoff_factor=0.8,
+        status_forcelist=(429, 500, 502, 503, 504), allowed_methods=None,
+    )
+    adapter = HTTPAdapter(max_retries=retry, pool_maxsize=config.MAX_WORKERS * 2)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    session.headers["User-Agent"] = config.USER_AGENT
+    return session
+
+
+SESSION = make_session()
+
+
+# ---------------------------------------------------------------------------
+# Text helpers
 # ---------------------------------------------------------------------------
 
 def matches_keywords(text: str) -> bool:
     if not text:
         return False
     lowered = text.lower()
-    if any(bad.lower() in lowered for bad in config.EXCLUDE_KEYWORDS):
+    if EXCLUDE_RE and EXCLUDE_RE.search(lowered):
         return False
-    return any(kw.lower() in lowered for kw in config.KEYWORDS)
+    return bool(KEYWORD_RE and KEYWORD_RE.search(lowered))
 
 
 def has_remote_signal(text: str) -> bool:
-    if not text:
-        return False
-    lowered = text.lower()
-    return any(kw.lower() in lowered for kw in config.REMOTE_SIGNAL_KEYWORDS)
+    return bool(text and REMOTE_RE and REMOTE_RE.search(text.lower()))
 
 
 def has_opportunity_signal(text: str) -> bool:
-    """
-    True if text contains a genuine job/consultancy/grant signal word —
-    used to filter the open-web search down to actual postings instead of
-    vendor pages, blog posts, or product listicles that merely mention a
-    topic keyword. Fixed job-board sources don't need this (everything on
-    them is inherently an opportunity), but the open web is unstructured.
-    """
-    if not text:
-        return False
-    lowered = text.lower()
-    all_signals = (
-        config.GRANT_KEYWORDS
-        + config.CONSULTANCY_KEYWORDS
-        + config.JOB_KEYWORDS
-        + config.OPPORTUNITY_SIGNAL_EXTRA_KEYWORDS
-    )
-    return any(kw.lower() in lowered for kw in all_signals)
+    return bool(text and SIGNAL_RE and SIGNAL_RE.search(text.lower()))
 
 
 def is_blocked_url(url: str) -> bool:
-    """True if url is a known vendor/blog/aggregator page or generic
-    category/search-listing page rather than a specific opportunity."""
     if not url:
         return False
     lowered = url.lower()
-    if any(domain in lowered for domain in config.DOMAIN_BLOCKLIST):
-        return True
-    if any(pattern in lowered for pattern in config.URL_PATTERN_BLOCKLIST):
-        return True
-    return False
+    return (any(d in lowered for d in config.DOMAIN_BLOCKLIST)
+            or any(p in lowered for p in config.URL_PATTERN_BLOCKLIST))
 
 
 def classify_opportunity(text: str) -> str:
-    """
-    Best-effort classification into Grant / Consultancy / Job / Uncertain.
-    Grant and consultancy signals are checked before job signals, since
-    those are the more distinctive phrasings.
-    """
     if not text:
         return "Uncertain"
     lowered = text.lower()
-    if any(kw in lowered for kw in config.GRANT_KEYWORDS):
+    if GRANT_RE and GRANT_RE.search(lowered):
         return "Grant"
-    if any(kw in lowered for kw in config.CONSULTANCY_KEYWORDS):
+    if CONSULT_RE and CONSULT_RE.search(lowered):
         return "Consultancy"
-    if any(kw in lowered for kw in config.JOB_KEYWORDS):
+    if JOB_RE and JOB_RE.search(lowered):
         return "Job"
     return "Uncertain"
 
 
-def load_seen() -> set:
-    if SEEN_STORE_PATH.exists():
-        try:
-            with open(SEEN_STORE_PATH, "r", encoding="utf-8") as f:
-                return set(json.load(f))
-        except (json.JSONDecodeError, OSError) as exc:
-            log.warning("Could not read seen-store (%s), starting fresh.", exc)
-    return set()
+def classify_location(text: str) -> str:
+    """Remote / Kenya-Africa / Elsewhere (unconfirmed). Evidence-based: only
+    what the title/snippet says, instead of labelling every UNjobs result
+    'Remote/global' as the old version did."""
+    lowered = (text or "").lower()
+    if REMOTE_RE and REMOTE_RE.search(lowered):
+        return "Remote"
+    if HOME_RE and HOME_RE.search(lowered):
+        return "Kenya/Africa"
+    return "Elsewhere/unconfirmed"
 
 
-def save_seen(seen: set) -> None:
-    with open(SEEN_STORE_PATH, "w", encoding="utf-8") as f:
-        json.dump(sorted(seen), f, indent=2)
+def score_item(item: dict) -> int:
+    text = f"{item.get('title', '')} {item.get('snippet', '')}".lower()
+    s = config.CATEGORY_SCORE.get(item.get("category", "Uncertain"), 0)
+    loc = item.get("location", "")
+    if loc == "Remote":
+        s += config.REMOTE_SCORE
+    elif loc == "Kenya/Africa":
+        s += config.HOME_REGION_SCORE
+    else:
+        s += config.ONSITE_ELSEWHERE_PENALTY
+    for rx, pts in PREFERRED_RES:
+        if rx and rx.search(text):
+            s += pts
+    return s
 
 
-def append_to_log(new_items: list) -> None:
-    file_exists = LOG_CSV_PATH.exists()
-    with open(LOG_CSV_PATH, "a", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(
-            f, fieldnames=["found_at", "category", "source", "title", "url", "extra"]
-        )
-        if not file_exists:
-            writer.writeheader()
-        for item in new_items:
-            writer.writerow(item)
+def _host(url: str) -> str:
+    h = urlparse(url).netloc.lower()
+    return h[4:] if h.startswith("www.") else h
 
+
+def url_key(url: str) -> str:
+    return "u:" + url
+
+
+def title_key(title: str, url: str) -> str:
+    toks = re.findall(r"[a-z0-9]+", title.lower())
+    return f"t:{_host(url)}|{' '.join(toks[:5])}"
+
+
+def unwrap_ddg(href: str) -> str:
+    """DuckDuckGo sometimes wraps result links in a redirect (…?uddg=<url>)."""
+    if href and "uddg=" in href:
+        target = parse_qs(urlparse(href).query).get("uddg")
+        if target:
+            return unquote(target[0])
+    return href
+
+
+# ---------------------------------------------------------------------------
+# Deadlines
+# ---------------------------------------------------------------------------
 
 def _today_utc():
     return datetime.now(timezone.utc).date()
 
 
-def find_deadline_in_text(text: str):
-    if not text:
+def _parse_date(raw: str):
+    try:
+        if re.match(r"\d{4}-\d{2}-\d{2}", raw):  # ISO: dayfirst would swap month/day
+            d = datetime.strptime(raw[:10], "%Y-%m-%d").date()
+        else:
+            d = dateparser.parse(raw, dayfirst=True, fuzzy=False).date()
+    except (ValueError, OverflowError, TypeError):
         return None
-    lowered = text.lower()
-    for trigger in DEADLINE_TRIGGERS:
-        idx = lowered.find(trigger)
-        if idx == -1:
-            continue
-        window = text[idx: idx + len(trigger) + 60]
-        try:
-            parsed = dateparser.parse(window, fuzzy=True, default=None)
-        except (ValueError, OverflowError):
-            continue
-        if parsed:
-            return parsed.date()
+    today = _today_utc()
+    # sanity window: ignores junk like "5/5/2005" or far-future placeholders
+    if today - timedelta(days=365) <= d <= today + timedelta(days=730):
+        return d
     return None
 
 
-def check_deadline_via_detail_page(url: str):
-    global _detail_page_checks_used
-    if not config.CHECK_DEADLINES_ON_DETAIL_PAGES:
-        return None, None
-    if _detail_page_checks_used >= config.MAX_DETAIL_PAGE_CHECKS_PER_RUN:
-        return None, None
-    _detail_page_checks_used += 1
+def find_deadline_in_text(text: str):
+    """First explicit date appearing shortly after a deadline phrase."""
+    if not text:
+        return None
+    lowered = text.lower()
+    hits = []
+    for trig in DEADLINE_TRIGGERS:
+        for m in re.finditer(re.escape(trig), lowered):
+            hits.append(m.start() + len(trig))
+    for end in sorted(hits):
+        window = text[end: end + 80]
+        for pat in DATE_PATTERNS:
+            m = pat.search(window)
+            if m:
+                d = _parse_date(m.group(0))
+                if d:
+                    return d
+    return None
 
+
+def find_deadline_structured(soup: BeautifulSoup):
+    """schema.org JobPosting.validThrough in JSON-LD, when a site provides it."""
+    for tag in soup.find_all("script", type="application/ld+json"):
+        raw = tag.string or tag.get_text()
+        for m in re.finditer(r'"validThrough"\s*:\s*"([^"]+)"', raw or ""):
+            d = _parse_date(m.group(1))
+            if d:
+                return d
+    return None
+
+
+def fetch_deadline(url: str):
+    """Returns the deadline date or None. Called only for NEW items."""
     try:
-        resp = requests.get(
-            url,
-            timeout=config.REQUEST_TIMEOUT_SECONDS,
-            headers={"User-Agent": config.USER_AGENT},
-        )
+        resp = SESSION.get(url, timeout=config.REQUEST_TIMEOUT_SECONDS)
         resp.raise_for_status()
     except requests.RequestException as exc:
-        log.debug("Could not fetch detail page %s for deadline check: %s", url, exc)
-        return None, None
-
-    soup = BeautifulSoup(resp.text, "html.parser")
-    text = soup.get_text(" ", strip=True)
-    deadline = find_deadline_in_text(text)
-    if deadline is None:
-        return None, None
-    return (deadline < _today_utc()), deadline
-
-
-def _build_result(source_name, title, href, is_global_source, snippet=""):
-    """Shared post-processing for generic_html and web_search matches:
-    remote labeling, classification, and expiration checking."""
-    remote_ok = is_global_source or has_remote_signal(title + " " + snippet)
-    if config.REQUIRE_REMOTE_SIGNAL and not remote_ok:
+        log.debug("detail fetch failed %s: %s", url, exc)
         return None
+    soup = BeautifulSoup(resp.text, "html.parser")
+    return find_deadline_structured(soup) or find_deadline_in_text(soup.get_text(" ", strip=True))
 
-    category = classify_opportunity(title + " " + snippet)
 
-    is_expired, deadline = check_deadline_via_detail_page(href)
-    if is_expired:
-        return "EXPIRED"
+# ---------------------------------------------------------------------------
+# Source fetchers — each returns (items, health)
+# health = {"raw": links/records examined, "kept": matches, "error": str|None}
+# ---------------------------------------------------------------------------
 
-    extra_bits = ["Remote/global" if remote_ok else "Location not confirmed remote"]
-    if deadline:
-        extra_bits.append(f"deadline {deadline.isoformat()}")
-    elif config.CHECK_DEADLINES_ON_DETAIL_PAGES:
-        extra_bits.append("deadline not found, verify manually")
-
+def _item(source, title, url, snippet="", extra="", deadline=None):
+    text = f"{title} {snippet}"
     return {
-        "source": source_name,
-        "title": title,
-        "url": href,
-        "category": category,
-        "extra": " — ".join(extra_bits),
+        "source": source, "title": title, "url": url,
+        "category": classify_opportunity(text),
+        "location": classify_location(text),
+        "snippet": snippet, "extra": extra, "deadline": deadline,
     }
 
 
-# ---------------------------------------------------------------------------
-# Source fetchers
-# ---------------------------------------------------------------------------
+def fetch_reliefweb(source_cfg: dict):
+    health = {"raw": 0, "kept": 0, "error": None}
+    appname = os.environ.get(source_cfg.get("appname_env", ""), "") or source_cfg.get("appname", "")
+    if not appname:
+        health["error"] = (f"config: {source_cfg.get('appname_env', 'appname')} not set "
+                           "(ReliefWeb needs a registered appname)")
+        return [], health
 
-def fetch_reliefweb(source_cfg: dict) -> list:
-    results = []
     query_string = " OR ".join(f'"{kw}"' for kw in config.KEYWORDS)
     params = {
-        "appname": source_cfg.get("appname", "opportunity-scanner"),
+        "appname": appname,
         "query[value]": query_string,
         "query[operator]": "OR",
         "sort[]": "date.created:desc",
-        "limit": 40,
+        "limit": 100,
         "fields[include][]": [
             "title", "url", "url_alias", "date.created", "date.closing",
             "source.name", "country.name",
         ],
     }
     try:
-        resp = requests.get(
-            source_cfg["url"], params=params,
-            timeout=config.REQUEST_TIMEOUT_SECONDS,
-            headers={"User-Agent": config.USER_AGENT},
-        )
+        resp = SESSION.get(source_cfg["url"], params=params, timeout=config.REQUEST_TIMEOUT_SECONDS)
         resp.raise_for_status()
         data = resp.json()
     except (requests.RequestException, ValueError) as exc:
+        health["error"] = str(exc)[:160]
         log.error("[%s] request failed: %s", source_cfg["name"], exc)
-        return results
+        return [], health
 
     today = _today_utc()
-    skipped_expired = 0
-
-    for item in data.get("data", []):
-        fields = item.get("fields", {})
+    items = []
+    for rec in data.get("data", []):
+        health["raw"] += 1
+        fields = rec.get("fields", {})
         title = fields.get("title", "")
         if not matches_keywords(title):
             continue
-
-        date_info = fields.get("date", {}) or {}
-        closing_raw = date_info.get("closing")
+        closing = None
+        closing_raw = (fields.get("date") or {}).get("closing")
         if closing_raw:
             try:
-                closing_date = dateparser.parse(closing_raw).date()
-                if closing_date < today:
-                    skipped_expired += 1
-                    continue
+                closing = dateparser.parse(closing_raw).date()
             except (ValueError, OverflowError):
-                pass
-
-        url = fields.get("url") or fields.get("url_alias") or item.get("href", "")
-        org_list = fields.get("source", [])
-        org_name = org_list[0]["name"] if org_list else ""
-        country_list = fields.get("country", [])
-        country_name = country_list[0]["name"] if country_list else ""
-
-        extra_bits = [b for b in (org_name, country_name) if b]
-        results.append({
-            "source": source_cfg["name"],
-            "title": title,
-            "url": url,
-            "category": classify_opportunity(title),
-            "extra": " — ".join(extra_bits),
-        })
-
-    if skipped_expired:
-        log.info("  (excluded %d already-closed ReliefWeb listing(s))", skipped_expired)
-    return results
+                closing = None
+        if closing and closing < today:
+            continue
+        url = fields.get("url") or fields.get("url_alias") or rec.get("href", "")
+        org = (fields.get("source") or [{}])[0].get("name", "")
+        country = (fields.get("country") or [{}])[0].get("name", "")
+        loc_text = f"{title} {country}"
+        extra = " — ".join(b for b in (org, country) if b)
+        items.append(_item(source_cfg["name"], title, url, snippet=country, extra=extra, deadline=closing))
+        items[-1]["location"] = classify_location(loc_text)
+    health["kept"] = len(items)
+    return items, health
 
 
-def fetch_generic_html(source_cfg: dict) -> list:
-    results = []
+def fetch_generic_html(source_cfg: dict):
+    health = {"raw": 0, "kept": 0, "error": None}
     try:
-        resp = requests.get(
-            source_cfg["url"], timeout=config.REQUEST_TIMEOUT_SECONDS,
-            headers={"User-Agent": config.USER_AGENT},
-        )
+        resp = SESSION.get(source_cfg["url"], timeout=config.REQUEST_TIMEOUT_SECONDS)
         resp.raise_for_status()
     except requests.RequestException as exc:
+        health["error"] = str(exc)[:160]
         log.error("[%s] request failed: %s", source_cfg["name"], exc)
-        return results
+        return [], health
 
     soup = BeautifulSoup(resp.text, "html.parser")
-    selector = source_cfg.get("css_selector", "a")
-    seen_on_page = set()
-    is_global_source = source_cfg.get("inherently_global", False)
-    skipped_expired = 0
-
-    for tag in soup.select(selector):
-        text = tag.get_text(strip=True)
-        href = tag.get("href")
+    base = "/".join(source_cfg["url"].split("/")[:3])
+    seen_on_page, items = set(), []
+    for tag in soup.select(source_cfg.get("css_selector", "a")):
+        text, href = tag.get_text(strip=True), tag.get("href")
         if not text or not href:
             continue
+        health["raw"] += 1
         if not matches_keywords(text):
             continue
-
         if href.startswith("/"):
-            base = "/".join(source_cfg["url"].split("/")[:3])
             href = base + href
-        if not href.startswith("http"):
+        if not href.startswith("http") or is_blocked_url(href):
             continue
-        if is_blocked_url(href):
+        if (text, href) in seen_on_page:
             continue
-
-        key = (text, href)
-        if key in seen_on_page:
-            continue
-        seen_on_page.add(key)
-
-        result = _build_result(source_cfg["name"], text, href, is_global_source)
-        if result == "EXPIRED":
-            skipped_expired += 1
-            continue
-        if result:
-            results.append(result)
-
-    if skipped_expired:
-        log.info("  (excluded %d listing(s) with a passed deadline)", skipped_expired)
-    return results
+        seen_on_page.add((text, href))
+        items.append(_item(source_cfg["name"], text, href))
+    health["kept"] = len(items)
+    if health["raw"] < 5 and not items:
+        health["error"] = "page returned almost no links (JavaScript-rendered, blocked, or changed)"
+    return items, health
 
 
-def fetch_web_search(source_cfg: dict) -> list:
-    """
-    Runs keyword searches across the open web via DuckDuckGo's HTML search
-    (no API key required). This is what catches institutional sites
-    (foundations, UN agencies, universities) that aren't hardcoded above.
-    Queries are capped by MAX_WEB_SEARCH_QUERIES_PER_RUN across the whole
-    run, with a short pause between requests to stay polite.
-    """
-    global _web_search_queries_used
-    results = []
+def _web_queries():
+    """Rotate through every topic×modifier combination across days so the
+    run cap never permanently starves the later queries."""
+    combos = [(f"{t} {m}", m) for t in config.WEB_SEARCH_TOPICS
+              for m in config.WEB_SEARCH_CATEGORY_MODIFIERS]
+    if not combos:
+        return []
+    cap = min(config.MAX_WEB_SEARCH_QUERIES_PER_RUN, len(combos))
+    start = (_today_utc().toordinal() * cap) % len(combos)
+    return [combos[(start + i) % len(combos)] for i in range(cap)]
+
+
+def fetch_web_search(source_cfg: dict):
+    health = {"raw": 0, "kept": 0, "error": None}
     if not config.WEB_SEARCH_ENABLED:
-        return results
+        return [], health
 
-    seen_urls_this_source = set()
+    items, seen_urls, failures = [], set(), 0
+    queries = _web_queries()
+    for query, modifier in queries:
+        log.info("  web-searching: %s", query)
+        try:
+            resp = SESSION.post(DDG_HTML_ENDPOINT, data={"q": query},
+                                timeout=config.REQUEST_TIMEOUT_SECONDS)
+            resp.raise_for_status()
+        except requests.RequestException as exc:
+            failures += 1
+            log.warning("  web search failed for '%s': %s", query, exc)
+            time.sleep(1)
+            continue
 
-    for topic in config.WEB_SEARCH_TOPICS:
-        for modifier in config.WEB_SEARCH_CATEGORY_MODIFIERS:
-            if _web_search_queries_used >= config.MAX_WEB_SEARCH_QUERIES_PER_RUN:
-                log.info("  (reached MAX_WEB_SEARCH_QUERIES_PER_RUN cap — stopping web search)")
-                return results
-            _web_search_queries_used += 1
-
-            query = f"{topic} {modifier}"
-            log.info("  web-searching: %s", query)
-            try:
-                resp = requests.post(
-                    DDG_HTML_ENDPOINT,
-                    data={"q": query},
-                    timeout=config.REQUEST_TIMEOUT_SECONDS,
-                    headers={"User-Agent": config.USER_AGENT},
-                )
-                resp.raise_for_status()
-            except requests.RequestException as exc:
-                log.warning("  web search request failed for '%s': %s", query, exc)
-                time.sleep(1)
+        soup = BeautifulSoup(resp.text, "html.parser")
+        for link in soup.select("a.result__a")[: config.MAX_RESULTS_PER_WEB_SEARCH_QUERY]:
+            health["raw"] += 1
+            title = link.get_text(strip=True)
+            href = unwrap_ddg(link.get("href") or "")
+            if not title or not href.startswith("http") or is_blocked_url(href):
                 continue
+            if not matches_keywords(title) or href in seen_urls:
+                continue
+            seen_urls.add(href)
+            parent = link.find_parent()
+            snip_tag = parent.find_next_sibling("a", class_="result__snippet") if parent else None
+            snippet = snip_tag.get_text(strip=True) if snip_tag else ""
+            if config.REQUIRE_OPPORTUNITY_SIGNAL_FOR_WEB_SEARCH and not has_opportunity_signal(f"{title} {snippet}"):
+                continue
+            items.append(_item(f"Web search ({modifier})", title, href, snippet=snippet))
+        time.sleep(1)  # be polite to DuckDuckGo
 
-            soup = BeautifulSoup(resp.text, "html.parser")
-            links = soup.select("a.result__a")[: config.MAX_RESULTS_PER_WEB_SEARCH_QUERY]
-
-            for link in links:
-                title = link.get_text(strip=True)
-                href = link.get("href")
-                if not title or not href or not href.startswith("http"):
-                    continue
-                if is_blocked_url(href):
-                    continue
-                if not matches_keywords(title):
-                    continue
-                if href in seen_urls_this_source:
-                    continue
-                seen_urls_this_source.add(href)
-
-                snippet_tag = link.find_parent().find_next_sibling(
-                    "a", class_="result__snippet"
-                ) if link.find_parent() else None
-                snippet = snippet_tag.get_text(strip=True) if snippet_tag else ""
-
-                combined_text = f"{title} {snippet}"
-                if config.REQUIRE_OPPORTUNITY_SIGNAL_FOR_WEB_SEARCH and not has_opportunity_signal(combined_text):
-                    continue
-
-                result = _build_result(
-                    f"Web search ({modifier})", title, href,
-                    is_global_source=True, snippet=snippet,
-                )
-                if result and result != "EXPIRED":
-                    results.append(result)
-
-            time.sleep(1)  # be polite to DuckDuckGo between queries
-
-    return results
+    health["kept"] = len(items)
+    if queries and failures == len(queries):
+        health["error"] = "all web-search requests failed (likely rate-limited or blocked)"
+    return items, health
 
 
 FETCHERS = {
     "reliefweb_api": fetch_reliefweb,
     "generic_html": fetch_generic_html,
+    "web_search": fetch_web_search,
 }
 
 
 # ---------------------------------------------------------------------------
-# Email
+# State: seen-store (urls + titles with dates) and per-source health
 # ---------------------------------------------------------------------------
 
-CATEGORY_ORDER = ["Job", "Consultancy", "Grant", "Uncertain"]
-CATEGORY_HEADINGS = {
-    "Job": "JOBS",
-    "Consultancy": "CONSULTANCIES (individual or firm)",
-    "Grant": "GRANTS",
-    "Uncertain": "UNCERTAIN CATEGORY (please check manually)",
-}
+def ensure_csv_schema() -> int:
+    """Self-heal the log: older versions wrote rows with 5 or 6 columns under
+    a 5-column header, which broke GitHub's CSV viewer and Excel filters.
+    Rewrites any non-conforming file to CSV_FIELDS. Returns rows migrated."""
+    if not LOG_CSV_PATH.exists():
+        return 0
+    with open(LOG_CSV_PATH, newline="", encoding="utf-8") as f:
+        rows = list(csv.reader(f))
+    if not rows or rows[0] == CSV_FIELDS:
+        return 0
+
+    out = []
+    for r in rows[1:]:
+        if not r:
+            continue
+        if len(r) == 5:
+            found, source, title, url, extra = r
+            category = classify_opportunity(title)
+        elif len(r) == 6:
+            found, category, source, title, url, extra = r
+        else:
+            log.warning("Skipping malformed log row with %d fields: %r", len(r), r[:3])
+            continue
+        m = re.search(r"deadline (\d{4}-\d{2}-\d{2})", extra)
+        deadline = m.group(1) if m else ""
+        extra = re.sub(r"^Remote/global( — )?", "", extra).replace("deadline not found, verify manually", "").strip(" —")
+        item = {"title": title, "category": category, "location": classify_location(title)}
+        out.append({
+            "found_at": found, "category": category, "score": score_item(item),
+            "source": source, "title": title, "url": url,
+            "location": item["location"], "deadline": deadline, "extra": extra,
+        })
+
+    tmp = LOG_CSV_PATH.with_suffix(".csv.tmp")
+    with open(tmp, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=CSV_FIELDS)
+        w.writeheader()
+        w.writerows(out)
+    tmp.replace(LOG_CSV_PATH)
+    log.info("Migrated %d log row(s) to the current CSV schema.", len(out))
+    return len(out)
 
 
-def group_by_category(items: list) -> dict:
-    grouped = {cat: [] for cat in CATEGORY_ORDER}
-    for item in items:
-        grouped.setdefault(item.get("category", "Uncertain"), []).append(item)
-    return grouped
+def _csv_rows():
+    if not LOG_CSV_PATH.exists():
+        return []
+    with open(LOG_CSV_PATH, newline="", encoding="utf-8") as f:
+        return list(csv.DictReader(f))
 
 
-def send_email_digest(new_items: list) -> None:
-    if not config.EMAIL_ENABLED or not new_items:
+def load_state() -> dict:
+    today = _today_utc().isoformat()
+    state = {"version": 2, "seen": {}, "health": {}}
+    if SEEN_STORE_PATH.exists():
+        try:
+            with open(SEEN_STORE_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, OSError) as exc:
+            log.warning("Could not read seen-store (%s), starting fresh.", exc)
+            data = None
+        if isinstance(data, list):  # v1 format: bare list of URLs
+            state["seen"] = {url_key(u): today for u in data}
+            for row in _csv_rows():  # seed title keys so old reposts stay quiet
+                if row.get("title") and row.get("url"):
+                    state["seen"][title_key(row["title"], row["url"])] = (row.get("found_at") or today)[:10]
+        elif isinstance(data, dict):
+            state["seen"] = data.get("seen", {})
+            state["health"] = data.get("health", {})
+    # prune
+    now = _today_utc()
+    keep = {}
+    for k, d in state["seen"].items():
+        try:
+            age = (now - datetime.strptime(d[:10], "%Y-%m-%d").date()).days
+        except ValueError:
+            age = 0
+        limit = TITLE_DEDUPE_DAYS if k.startswith("t:") else config.SEEN_RETENTION_DAYS
+        if age <= limit:
+            keep[k] = d
+    state["seen"] = keep
+    return state
+
+
+def save_state(state: dict) -> None:
+    with open(SEEN_STORE_PATH, "w", encoding="utf-8") as f:
+        json.dump(state, f, indent=1, sort_keys=True)
+
+
+def append_to_log(items: list) -> None:
+    exists = LOG_CSV_PATH.exists()
+    with open(LOG_CSV_PATH, "a", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=CSV_FIELDS, extrasaction="ignore")
+        if not exists:
+            w.writeheader()
+        for it in items:
+            w.writerow({**it, "deadline": it["deadline"].isoformat() if it.get("deadline") else ""})
+
+
+def update_health(state: dict, name: str, health: dict) -> "str | None":
+    """Tracks consecutive empty runs; returns an alert string when due."""
+    rec = state["health"].setdefault(name, {"zero_runs": 0, "last_ok": None})
+    if health["error"] or health["kept"] == 0:
+        rec["zero_runs"] += 1
+    else:
+        rec["zero_runs"], rec["last_ok"] = 0, _today_utc().isoformat()
+    n = rec["zero_runs"]
+    if n >= HEALTH_ALERT_AFTER_RUNS and (n - HEALTH_ALERT_AFTER_RUNS) % 7 == 0:
+        why = health["error"] or "no matching results"
+        return f"{name}: nothing for {n} runs in a row ({why}). Last worked: {rec['last_ok'] or 'never'}."
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Output
+# ---------------------------------------------------------------------------
+
+def _line_detail(it: dict) -> str:
+    bits = [it["location"]]
+    bits.append(f"deadline {it['deadline'].isoformat()}" if it.get("deadline") else "deadline unknown")
+    if it.get("extra"):
+        bits.append(it["extra"])
+    return " | ".join(bits)
+
+
+def build_digest(items: list, alerts: list) -> str:
+    lines = [f"{len(items)} new opportunity(ies), best matches first.\n"]
+    top = [i for i in items if i["score"] >= config.TOP_PICK_MIN_SCORE]
+    if top:
+        lines.append(f"=== TOP PICKS ({len(top)}) ===\n")
+        for it in top:
+            lines += [f"- [{it['category']}, score {it['score']}] {it['title']}",
+                      f"  {it['url']}", f"  {_line_detail(it)}", ""]
+    for cat in CATEGORY_ORDER:
+        group = [i for i in items if i["category"] == cat and i not in top]
+        if not group:
+            continue
+        lines.append(f"=== {CATEGORY_HEADINGS[cat]} ({len(group)}) ===\n")
+        for it in group:
+            lines += [f"- [score {it['score']}] {it['title']}", f"  {it['url']}",
+                      f"  {_line_detail(it)}", ""]
+    if alerts:
+        lines.append("=== SOURCE HEALTH — needs attention ===")
+        lines += [f"- {a}" for a in alerts]
+    return "\n".join(lines)
+
+
+def send_email_digest(items: list, alerts: list) -> None:
+    if not config.EMAIL_ENABLED or not (items or alerts):
         return
-
     password = os.environ.get(config.SMTP_PASSWORD_ENV_VAR)
     if not password:
-        log.warning(
-            "EMAIL_ENABLED is True but the %s environment variable is not "
-            "set — skipping email. See README.md.",
-            config.SMTP_PASSWORD_ENV_VAR,
-        )
+        log.warning("EMAIL_ENABLED but %s is not set — skipping email.", config.SMTP_PASSWORD_ENV_VAR)
         return
-
-    grouped = group_by_category(new_items)
-    lines = [f"{len(new_items)} new opportunity(ies) found:\n"]
-    for category in CATEGORY_ORDER:
-        items = grouped.get(category, [])
-        if not items:
-            continue
-        lines.append(f"=== {CATEGORY_HEADINGS[category]} ({len(items)}) ===\n")
-        for item in items:
-            lines.append(f"- [{item['source']}] {item['title']}")
-            lines.append(f"  {item['url']}")
-            if item.get("extra"):
-                lines.append(f"  ({item['extra']})")
-            lines.append("")
-
-    body = "\n".join(lines)
-    msg = MIMEText(body, "plain", "utf-8")
-    msg["Subject"] = config.EMAIL_SUBJECT
-    msg["From"] = config.EMAIL_FROM
-    msg["To"] = config.EMAIL_TO
-
+    top = sum(1 for i in items if i["score"] >= config.TOP_PICK_MIN_SCORE)
+    subject = config.EMAIL_SUBJECT
+    if items:
+        subject += f" ({len(items)} new, {top} top picks)"
+    elif alerts:
+        subject = "Opportunity scanner: source health alert"
+    msg = MIMEText(build_digest(items, alerts), "plain", "utf-8")
+    msg["Subject"], msg["From"], msg["To"] = subject, config.EMAIL_FROM, config.EMAIL_TO
     try:
-        with smtplib.SMTP(config.SMTP_HOST, config.SMTP_PORT, timeout=config.REQUEST_TIMEOUT_SECONDS) as server:
-            server.starttls()
-            server.login(config.SMTP_USERNAME, password)
-            server.sendmail(config.EMAIL_FROM, [config.EMAIL_TO], msg.as_string())
+        with smtplib.SMTP(config.SMTP_HOST, config.SMTP_PORT, timeout=config.REQUEST_TIMEOUT_SECONDS) as s:
+            s.starttls()
+            s.login(config.SMTP_USERNAME, password)
+            s.sendmail(config.EMAIL_FROM, [config.EMAIL_TO], msg.as_string())
         log.info("Email digest sent to %s.", config.EMAIL_TO)
     except (smtplib.SMTPException, OSError) as exc:
         log.error("Failed to send email digest: %s", exc)
@@ -504,56 +636,80 @@ def send_email_digest(new_items: list) -> None:
 # ---------------------------------------------------------------------------
 
 def main() -> int:
-    global _detail_page_checks_used, _web_search_queries_used
-    _detail_page_checks_used = 0
-    _web_search_queries_used = 0
+    ensure_csv_schema()
+    state = load_state()
+    seen = state["seen"]
+    now_s = _today_utc().isoformat()
 
-    sources_to_run = list(config.SOURCES)
+    sources = list(config.SOURCES)
     if config.WEB_SEARCH_ENABLED:
-        sources_to_run.append({"name": "Open web search", "type": "web_search"})
+        sources.append({"name": "Open web search", "type": "web_search"})
+    log.info("Starting scan across %d source(s)...", len(sources))
 
-    log.info("Starting scan across %d source(s)...", len(sources_to_run))
-    seen = load_seen()
-    all_new = []
-
-    for source_cfg in sources_to_run:
-        if source_cfg["type"] == "web_search":
-            fetcher = fetch_web_search
-        else:
-            fetcher = FETCHERS.get(source_cfg["type"])
+    def run(src):
+        fetcher = FETCHERS.get(src["type"])
         if fetcher is None:
-            log.warning("Unknown source type '%s' for '%s' — skipping.",
-                        source_cfg["type"], source_cfg["name"])
+            return src, [], {"raw": 0, "kept": 0, "error": f"unknown type {src['type']}"}
+        items, health = fetcher(src)
+        return src, items, health
+
+    t0 = time.time()
+    with ThreadPoolExecutor(max_workers=min(config.MAX_WORKERS, len(sources))) as pool:
+        outcomes = list(pool.map(run, sources))
+
+    alerts, candidates = [], []
+    for src, items, health in outcomes:
+        log.info("%-42s raw=%-4d kept=%-3d %s", src["name"], health["raw"], health["kept"],
+                 f"ERROR: {health['error']}" if health["error"] else "")
+        alert = update_health(state, src["name"], health)
+        if alert:
+            alerts.append(alert)
+        candidates.extend(items)
+
+    # 1) dedupe FIRST (url + repost-by-title), 2) only then spend page fetches
+    new, batch_keys = [], set()
+    for it in candidates:
+        keys = {url_key(it["url"]), title_key(it["title"], it["url"])}
+        if keys & seen.keys() or keys & batch_keys:
             continue
+        batch_keys |= keys
+        it["_keys"] = keys
+        new.append(it)
 
-        log.info("Checking: %s", source_cfg["name"])
-        matches = fetcher(source_cfg)
-        log.info("  -> %d keyword match(es) kept from this source", len(matches))
+    need_deadline = [i for i in new if not i.get("deadline")] if config.CHECK_DEADLINES_ON_DETAIL_PAGES else []
+    need_deadline = need_deadline[: config.MAX_DETAIL_PAGE_CHECKS_PER_RUN]
+    if need_deadline:
+        with ThreadPoolExecutor(max_workers=config.MAX_WORKERS) as pool:
+            for it, d in zip(need_deadline, pool.map(lambda i: fetch_deadline(i["url"]), need_deadline)):
+                it["deadline"] = d
 
-        for m in matches:
-            uid = m["url"] or f"{m['source']}::{m['title']}"
-            if uid in seen:
-                continue
-            seen.add(uid)
-            m["found_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-            all_new.append(m)
+    today, final, expired = _today_utc(), [], 0
+    for it in new:
+        for k in it.pop("_keys"):
+            seen[k] = now_s  # mark seen either way: expired items are never rechecked
+        if it.get("deadline") and it["deadline"] < today:
+            expired += 1
+            continue
+        if config.REQUIRE_REMOTE_SIGNAL and it["location"] != "Remote":
+            continue
+        it["score"] = score_item(it)
+        it["found_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+        final.append(it)
+    final.sort(key=lambda i: (-i["score"], CATEGORY_ORDER.index(i["category"])))
 
-    if all_new:
-        log.info("Found %d NEW opportunity(ies):", len(all_new))
-        grouped = group_by_category(all_new)
-        for category in CATEGORY_ORDER:
-            items = grouped.get(category, [])
-            if not items:
-                continue
-            print(f"\n=== {CATEGORY_HEADINGS[category]} ({len(items)}) ===")
-            for item in items:
-                print(f"  • [{item['source']}] {item['title']}\n    {item['url']}\n    {item['extra']}")
-        append_to_log(all_new)
-        send_email_digest(all_new)
+    log.info("%d candidate(s) -> %d new, %d expired, %d to report (%.1fs)",
+             len(candidates), len(new), expired, len(final), time.time() - t0)
+
+    if final:
+        print("\n" + build_digest(final, []))
+        append_to_log(final)
     else:
         log.info("No new opportunities since last run.")
+    for a in alerts:
+        log.warning("SOURCE HEALTH: %s", a)
 
-    save_seen(seen)
+    send_email_digest(final, alerts)
+    save_state(state)
     log.info("Done. Full history in %s", LOG_CSV_PATH)
     return 0
 

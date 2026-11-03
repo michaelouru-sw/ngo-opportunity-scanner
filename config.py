@@ -31,6 +31,9 @@ KEYWORDS = [
 EXCLUDE_KEYWORDS = [
     "unpaid",
     "volunteer",
+    "intern",       # whole-word match: also catches "internship", not "international"
+    "internship",
+    "asistente",    # Spanish-language postings
 ]
 
 # ---------------------------------------------------------------------------
@@ -61,7 +64,7 @@ CONSULTANCY_KEYWORDS = [
 ]
 
 JOB_KEYWORDS = [
-    "vacanc",  # catches "vacancy" AND "vacancies"
+    "vacancy", "vacancies",
     "job opening", "we are hiring", "is hiring", "hiring",
     "recruitment", "full-time position", "permanent position", "staff position",
     "career opportunity", "job opportunity", "job posting",
@@ -136,7 +139,7 @@ REQUIRE_REMOTE_SIGNAL = False
 # found at all, it's kept but flagged "deadline not found — verify manually".
 # ---------------------------------------------------------------------------
 CHECK_DEADLINES_ON_DETAIL_PAGES = True
-MAX_DETAIL_PAGE_CHECKS_PER_RUN = 40  # caps total extra requests per run
+MAX_DETAIL_PAGE_CHECKS_PER_RUN = 80  # only NEW items are checked, so this is rarely hit
 
 # ---------------------------------------------------------------------------
 # OPEN-WEB SEARCH (reaches institutional sites you haven't hardcoded)
@@ -159,7 +162,7 @@ WEB_SEARCH_TOPICS = [
     "digital learning",
 ]
 WEB_SEARCH_CATEGORY_MODIFIERS = ["consultancy NGO", "vacancy NGO", "grant education"]
-MAX_WEB_SEARCH_QUERIES_PER_RUN = 10
+MAX_WEB_SEARCH_QUERIES_PER_RUN = 10  # queries rotate daily so every combination gets covered
 MAX_RESULTS_PER_WEB_SEARCH_QUERY = 8
 
 # ---------------------------------------------------------------------------
@@ -176,10 +179,14 @@ MAX_RESULTS_PER_WEB_SEARCH_QUERY = 8
 # ---------------------------------------------------------------------------
 SOURCES = [
     {
+        # ReliefWeb retired API v1 and disables any appname that has not been
+        # approved (https://apidoc.reliefweb.int/). Request an appname, then
+        # set it as the RELIEFWEB_APPNAME environment variable / Actions secret.
+        # Until then this source is skipped (and reported in the health section).
         "name": "ReliefWeb Jobs (global)",
         "type": "reliefweb_api",
-        "url": "https://api.reliefweb.int/v1/jobs",
-        "appname": "ngo-elearning-scanner",
+        "url": "https://api.reliefweb.int/v2/jobs",
+        "appname_env": "RELIEFWEB_APPNAME",
     },
     {
         "name": "UNjobs — Instructional Design",
@@ -249,6 +256,31 @@ SOURCES = [
     #     "css_selector": "a",
     # },
 ]
+
+# ---------------------------------------------------------------------------
+# PERFORMANCE
+# ---------------------------------------------------------------------------
+MAX_WORKERS = 8            # parallel page fetches (sources and deadline checks)
+REQUEST_RETRIES = 2        # automatic retries on 429/5xx/connection errors
+SEEN_RETENTION_DAYS = 365  # forget dedup entries older than this
+
+# ---------------------------------------------------------------------------
+# RELEVANCE SCORING (higher = shown first; "TOP PICKS" in the digest)
+# Tuned for a Nairobi-based consultant/lead: remote or Kenya/Africa first,
+# consultancies and grants above jobs, onsite-elsewhere roles pushed down.
+# ---------------------------------------------------------------------------
+HOME_REGION_KEYWORDS = ["kenya", "nairobi", "east africa", "africa", "sub-saharan"]
+CATEGORY_SCORE = {"Consultancy": 3, "Grant": 2, "Job": 1, "Uncertain": 0}
+REMOTE_SCORE = 3
+HOME_REGION_SCORE = 3
+ONSITE_ELSEWHERE_PENALTY = -2
+PREFERRED_TERMS = {          # term -> points (each counted once)
+    "moodle": 2, "lms": 1, "learning management": 1,
+    "instructional design": 1, "learning experience": 1,
+    "digital learning": 1, "ai in education": 2, "e-learning": 1, "elearning": 1,
+    "lead": 1, "senior": 1, "consultant": 1,
+}
+TOP_PICK_MIN_SCORE = 6
 
 # ---------------------------------------------------------------------------
 # OUTPUT

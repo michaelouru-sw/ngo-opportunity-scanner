@@ -241,3 +241,16 @@ same URL twice, but if a site changes a job's URL slightly, it may look
 | `requirements.txt` | Python packages needed |
 | `opportunities_log.csv` | Created after first run — full history |
 | `seen_opportunities.json` | Created after first run — dedup memory |
+
+## What changed in the performance overhaul
+
+- **ReliefWeb needs a registered appname.** v1 of its API is retired. Request one at
+  https://apidoc.reliefweb.int/, then add it as the `RELIEFWEB_APPNAME` repo secret.
+  Until then that source is skipped and reported in the digest's health section.
+- **Source health alerts.** Any source that returns nothing for 3 runs in a row is
+  flagged in the email (then weekly), so silent failures can't hide.
+- **Scoring.** Each item gets a score (remote / Kenya-Africa, consultancy/grant, Moodle/LMS
+  terms up; onsite-elsewhere down). Digest shows TOP PICKS first. Tune in `config.py`.
+- **Dedup by repost.** Same title on the same site within 45 days is treated as a repost.
+- **Log columns:** `found_at, category, score, source, title, url, location, deadline, extra`.
+  Old rows are migrated automatically on the first run.
