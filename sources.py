@@ -389,15 +389,27 @@ def build_fetchers(core) -> dict:
                 continue
             h["boards"] += list(discover_boards(html))
             soup = BeautifulSoup(html, "html.parser")
+            lc = src.get("link_contains")
             for a in soup.select("a[href]"):
                 text = a.get_text(" ", strip=True) or a.get("title") or a.get("aria-label") or ""
                 href = urljoin(u, a["href"])
                 if not text:
                     continue
                 h["raw"] += 1
-                if not href.startswith("http") or core.is_blocked_url(href) or (text, href) in seen:
+                if not href.startswith("http") or core.is_blocked_url(href):
                     continue
-                if not match(text):
+                if lc:  # page is already topic-scoped (e.g. an EasyChair topic list): take every call link
+                    if lc not in href or any(x in href for x in src.get("link_exclude", [])):
+                        continue
+                    if len(text) < 14:  # bare acronym: borrow the table row for context
+                        row = a.find_parent(["tr", "li"])
+                        if row:
+                            text = row.get_text(" ", strip=True)[:140]
+                    if core.EXCLUDE_RE and core.EXCLUDE_RE.search(text.lower()):
+                        continue
+                elif not match(text):
+                    continue
+                if (text, href) in seen:
                     continue
                 if src.get("require_signal") and not core.has_opportunity_signal(text):
                     continue
