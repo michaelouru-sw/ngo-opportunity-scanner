@@ -1,9 +1,200 @@
 {
- "health": {},
+ "boards": {},
+ "health": {
+  "APHRC": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "BrighterMonday Kenya": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "Corporate Staffing Kenya": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "DOAJ \u2014 journals with no APC": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "DevelopmentAid \u2014 Grants": {
+   "last_ok": null,
+   "zero_runs": 1
+  },
+  "DevelopmentAid \u2014 Jobs": {
+   "last_ok": null,
+   "zero_runs": 1
+  },
+  "DevelopmentAid \u2014 Tenders (consultancies)": {
+   "last_ok": null,
+   "zero_runs": 1
+  },
+  "Devex Jobs \u2014 Instructional Design": {
+   "last_ok": null,
+   "zero_runs": 1
+  },
+  "EasyChair CFPs \u2014 e-learning": {
+   "last_ok": null,
+   "zero_runs": 1
+  },
+  "EasyChair CFPs \u2014 education technology": {
+   "last_ok": null,
+   "zero_runs": 1
+  },
+  "EasyChair CFPs \u2014 educational technologies": {
+   "last_ok": null,
+   "zero_runs": 1
+  },
+  "Emerald \u2014 calls for books": {
+   "last_ok": null,
+   "zero_runs": 1
+  },
+  "FAO Jobs": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "IGI Global \u2014 calls for chapters": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "ILO Jobs": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "Idealist \u2014 Instructional Design (remote)": {
+   "last_ok": null,
+   "zero_runs": 1
+  },
+  "KENET": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "LinkedIn job alerts (email)": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "Medair Tenders": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "NGO Tenders \u2014 ID consultants": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "Open web search": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "Penn CFP list \u2014 education": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "ReliefWeb Jobs (global)": {
+   "last_ok": null,
+   "zero_runs": 1
+  },
+  "UNDP Jobs": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "UNESCO Careers": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "UNGM Notices": {
+   "last_ok": null,
+   "zero_runs": 1
+  },
+  "UNICEF Jobs": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "UNITAR Vacancies": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "UNjobs \u2014 E-learning": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "UNjobs \u2014 Instructional Design": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "UNjobs \u2014 Learning Management Systems": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "WHO Careers": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "WikiCFP \u2014 calls for papers": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "World Bank Procurement (consulting notices)": {
+   "last_ok": "2026-11-03",
+   "zero_runs": 0
+  },
+  "fundsforNGOs (grants)": {
+   "last_ok": null,
+   "zero_runs": 1
+  }
+ },
  "seen": {
+  "t:brightermonday.co.ke|instructional design": "2026-11-03",
+  "t:brightermonday.co.ke|learning experience designer": "2026-11-03",
+  "t:brightermonday.co.ke|senior learning experience designer": "2026-11-03",
+  "t:communities.springernature.com|call for papers ai in": "2026-11-03",
+  "t:corporatestaffing.co.ke|assistant education it e learning": "2026-11-03",
+  "t:corporatestaffing.co.ke|e learning admin job outspan": "2026-11-03",
+  "t:corporatestaffing.co.ke|e learning administrator job outspan": "2026-11-03",
+  "t:corporatestaffing.co.ke|e learning and pedagogy coordinator": "2026-11-03",
+  "t:corporatestaffing.co.ke|e learning pedagogy coordinator education": "2026-11-03",
+  "t:corporatestaffing.co.ke|elearning systems support specialist job": "2026-11-03",
+  "t:corporatestaffing.co.ke|junior learning designer job ami": "2026-11-03",
+  "t:corporatestaffing.co.ke|learning experience designer job peek": "2026-11-03",
+  "t:corporatestaffing.co.ke|lms systems integration specialist job": "2026-11-03",
+  "t:corporatestaffing.co.ke|senior moodle php developer job": "2026-11-03",
+  "t:corporatestaffing.co.ke|technical advisor e learning workforce": "2026-11-03",
+  "t:corporatestaffing.co.ke|technical officer e learning job": "2026-11-03",
   "t:developmentaid.org|open tender instructional design and": "2026-11-03",
+  "t:facebook.com|the call for proposals is": "2026-11-03",
+  "t:journals.sagepub.com|call for papers journal of": "2026-11-03",
+  "t:kenet.or.ke|kenet strengthens digital learning capacity": "2026-11-03",
+  "t:linkedin.com|call for chapters exploring ai": "2026-11-03",
+  "t:linkedin.com|call for chapters inclusive higher": "2026-11-03",
   "t:medair.org|instructional design consultancy remote medair": "2026-11-03",
   "t:ngobox.org|digital learning and ai in": "2026-11-03",
+  "t:onlinelibrary.wiley.com|new directions for higher education": "2026-11-03",
+  "t:phdtalks.org|springer call for papers ai": "2026-11-03",
+  "t:projects.worldbank.org|1 2 3 1 individual": "2026-11-03",
+  "t:projects.worldbank.org|1 2 3 2 individual": "2026-11-03",
+  "t:projects.worldbank.org|acquisition de mat riels du": "2026-11-03",
+  "t:projects.worldbank.org|acquisition du mat riel moodle": "2026-11-03",
+  "t:projects.worldbank.org|acquisition nom de domaine et": "2026-11-03",
+  "t:projects.worldbank.org|contracting with a consultancy firm": "2026-11-03",
+  "t:projects.worldbank.org|contrata o de empresa para": "2026-11-03",
+  "t:projects.worldbank.org|contrata o de uma firma": "2026-11-03",
+  "t:projects.worldbank.org|convert esdp 2 materials into": "2026-11-03",
+  "t:projects.worldbank.org|cs to provide training in": "2026-11-03",
+  "t:projects.worldbank.org|development of a 90 minute": "2026-11-03",
+  "t:projects.worldbank.org|development of moodle on cacip": "2026-11-03",
+  "t:projects.worldbank.org|e learning modules through the": "2026-11-03",
+  "t:projects.worldbank.org|h bergement de la plateforme": "2026-11-03",
+  "t:projects.worldbank.org|learning designer expert": "2026-11-03",
+  "t:projects.worldbank.org|procurement of learning management system": "2026-11-03",
+  "t:projects.worldbank.org|recrutement d une assistance technique": "2026-11-03",
+  "t:projects.worldbank.org|review and redesign of existing": "2026-11-03",
+  "t:projects.worldbank.org|supply of ict infrastructure computers": "2026-11-03",
+  "t:projects.worldbank.org|the training in the module": "2026-11-03",
+  "t:projects.worldbank.org|training on the use of": "2026-11-03",
+  "t:projects.worldbank.org|training the teaching staff on": "2026-11-03",
+  "t:projects.worldbank.org|upgrade and maintenance of capacity": "2026-11-03",
+  "t:scholarworks.iu.edu|call for abstracts for the": "2026-11-03",
+  "t:scholarworks.iu.edu|jotlt call for abstracts for": "2026-11-03",
+  "t:scribd.com|call for papers neo liberal": "2026-11-03",
   "t:unjobnet.org|medair instructional design and e": "2026-11-03",
   "t:unjobs.org|asistente tutor a e learning": "2026-09-22",
   "t:unjobs.org|call for proposals for specialized": "2026-10-29",
@@ -26,12 +217,21 @@
   "t:unjobs.org|senior capacity development officer e": "2026-10-11",
   "t:unjobs.org|talent pool instructional designer learning": "2026-10-16",
   "t:unjobs.org|vacancy instructional design intern training": "2026-09-19",
+  "t:wikicfp.com|distance learning": "2026-11-03",
+  "t:wikicfp.com|educational technology": "2026-11-03",
+  "t:wikicfp.com|learning analytics": "2026-11-03",
+  "t:wikicfp.com|learning technology": "2026-11-03",
   "t:ziprecruiter.com|non profit instructional design jobs": "2026-09-19",
+  "u:http://www.wikicfp.com/cfp/call?conference=distance learning": "2026-11-03",
+  "u:http://www.wikicfp.com/cfp/call?conference=educational technology": "2026-11-03",
+  "u:http://www.wikicfp.com/cfp/call?conference=learning analytics": "2026-11-03",
+  "u:http://www.wikicfp.com/cfp/call?conference=learning technology": "2026-11-03",
   "u:https://ca.linkedin.com/in/grantvanb": "2026-11-03",
   "u:https://campuslifestyle.org/2026/08/04/unicef-digital-learning-consultant/": "2026-11-03",
   "u:https://christytuckerlearning.com/professional-organizations-for-instructional-designers/": "2026-11-03",
   "u:https://clarityconsultants.com/what-we-do/elearning-development/": "2026-11-03",
   "u:https://clarityconsultants.com/what-we-do/instructional-design/": "2026-11-03",
+  "u:https://communities.springernature.com/posts/call-for-papers-ai-in-education": "2026-11-03",
   "u:https://docs.moodle.org/20/en/Moodle_in_education": "2026-11-03",
   "u:https://dynamind-elearning.com/": "2026-11-03",
   "u:https://eaglevisionconsultancy.org/programs/e-learning-and-digital-training": "2026-11-03",
@@ -42,6 +242,7 @@
   "u:https://humentum.org/ngo-training/ngo-lms-and-elearning-services/": "2026-11-03",
   "u:https://humentum.org/ngo-training/our-lms-and-elearning-services/": "2026-11-03",
   "u:https://jooble.org/jobs-non-profit-instructional-design": "2026-11-03",
+  "u:https://journals.sagepub.com/page/ets/call-for-papers": "2026-11-03",
   "u:https://learnstream.io/blog/learning-management-systems-for-nonprofits/": "2026-11-03",
   "u:https://medair.org/tenders/instructional-design-consultancy": "2026-11-03",
   "u:https://moodle.com/careers/": "2026-11-03",
@@ -51,9 +252,36 @@
   "u:https://ngobox.org/job-detail_Digital-Learning-and-AI-in-Education-Consultant-UNICEF_109949": "2026-11-03",
   "u:https://ngotenders.net/instructional-design-consultants/": "2026-11-03",
   "u:https://ngotenders.net/software-developer-e-learning-platform-moodle-2/": "2026-11-03",
+  "u:https://onlinelibrary.wiley.com/page/journal/15360741/call-for-papers/human-centered-ai": "2026-11-03",
+  "u:https://phdtalks.org/2026/01/springer-call-for-papers-in-ai.html": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00074964": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00106116": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00142841": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00190544": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00195833": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00234967": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00239973": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00247035": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00255468": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00305690": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00316315": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00339878": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00363465": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00363587": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00363612": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00379973": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00405616": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00446022": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00454517": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00455244": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00459369": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00469528": "2026-11-03",
+  "u:https://projects.worldbank.org/en/projects-operations/procurement-detail/OP00470359": "2026-11-03",
   "u:https://raccoongang.com/blog/best-lms-for-nonprofits/": "2026-11-03",
   "u:https://raccoongang.com/moodle-services/": "2026-11-03",
   "u:https://raccoongang.com/open-edx-services/lms-nonprofits/": "2026-11-03",
+  "u:https://scholarworks.iu.edu/journals/index.php/josotl/announcement/view/252": "2026-11-03",
+  "u:https://scholarworks.iu.edu/journals/index.php/jotlt/announcement/view/249": "2026-11-03",
   "u:https://teachers.institute/educational-technology-overview/learning-management-systems-power-online-education/": "2026-11-03",
   "u:https://unitar.org/vacancy-announcements/roster/consultant-instructional-design/60": "2026-11-03",
   "u:https://unjobs.org/skills/instructional-design": "2026-11-03",
@@ -97,16 +325,26 @@
   "u:https://unjobs.org/vacancies/1793163705758": "2026-11-03",
   "u:https://unjobs.org/vacancies/1793336520249": "2026-11-03",
   "u:https://www.beyondkey.com/blog/moodle-for-nonprofits/": "2026-11-03",
+  "u:https://www.brightermonday.co.ke/jobs": "2026-11-03",
+  "u:https://www.brightermonday.co.ke/listings/learning-experience-designer-5p4epx": "2026-11-03",
+  "u:https://www.brightermonday.co.ke/listings/senior-learning-experience-designer-wrz6mk": "2026-11-03",
+  "u:https://www.corporatestaffing.co.ke/job/assistant-education-it-e-learning-job-aic-kijabe-hospital-kijabe-kenya/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/design-digital-learning-capacity-building-job-ires-nairobi-kenya/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/director-open-distance-e-learning-at-umma-university/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/director-open-distance-e-learning-job-pac-university-nairobi-kenya/": "2026-11-03",
+  "u:https://www.corporatestaffing.co.ke/job/e-learning-admin-job-outspan-medical-college/": "2026-11-03",
+  "u:https://www.corporatestaffing.co.ke/job/e-learning-administrator-2026-job-outspan-medical-college/": "2026-11-03",
+  "u:https://www.corporatestaffing.co.ke/job/e-learning-and-pedagogy-coordinator-job-zetech-university/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/e-learning-coordinator-job-nibs-college/": "2026-11-03",
+  "u:https://www.corporatestaffing.co.ke/job/e-learning-pedagogy-coordinator-education-technology-job-zetech-university/": "2026-11-03",
+  "u:https://www.corporatestaffing.co.ke/job/elearning-systems-support-specialist-job-maseno-university/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/instructional-design-job-ouk/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/instructional-designer-academic-programmes-job-strathmore-university-nairobi-kenya/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/instructional-designer-ngo-job-dean-90-120k/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/instructional-designers-ftc-job-britam-ke/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/instructional-designers-ftc-job-britam/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/intern-instructional-design-communications-ngo-job-un-habitat/": "2026-11-03",
+  "u:https://www.corporatestaffing.co.ke/job/junior-learning-designer-job-ami-nairobi-kenya/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/learning-design-job-ami-nairobi-kenya/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/learning-design-solutions-lead-ngo-job-natural-state/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/learning-development-job-burhani-engineers/": "2026-11-03",
@@ -114,22 +352,32 @@
   "u:https://www.corporatestaffing.co.ke/job/learning-development-officer-job-aa-ke/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/learning-development-officer-job-safal-group/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/learning-experience-design-ngo-job-educate-nairobi-kenya/": "2026-11-03",
+  "u:https://www.corporatestaffing.co.ke/job/learning-experience-designer-job-peek-vision/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/learning-experience-designer-ngo-job-f4e/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/lecturers-instructional-design-job-ouk/": "2026-11-03",
+  "u:https://www.corporatestaffing.co.ke/job/lms-systems-integration-specialist-job-ires-nairobi-kenya/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/part-time-lecturer-instructional-design-job-ouk/": "2026-11-03",
   "u:https://www.corporatestaffing.co.ke/job/part-time-lectures-instructional-design-job-ouk/": "2026-11-03",
+  "u:https://www.corporatestaffing.co.ke/job/senior-moodle-php-developer-job-moringa-school/": "2026-11-03",
+  "u:https://www.corporatestaffing.co.ke/job/technical-advisor-e-learning-workforce-job-amref/": "2026-11-03",
+  "u:https://www.corporatestaffing.co.ke/job/technical-officer-e-learning-job-amref/": "2026-11-03",
   "u:https://www.developmentaid.org/tenders/view/1740519/instructional-design-and-e-learning-consultant": "2026-11-03",
   "u:https://www.elearningtrendz.com/blog/top-lms-platforms-for-nonprofits-ngos/": "2026-11-03",
   "u:https://www.evolmind.com/en/organisations/ong-and-foundations/": "2026-11-03",
+  "u:https://www.facebook.com/eLearningAfricaConference/posts/-the-call-for-proposals-is-now-open-for-elearning-africa-2026-taking-place-from-/1205848991583524/": "2026-11-03",
   "u:https://www.glassdoor.com/job-listing/instructional-designer-goodwill-of-central-northern-arizona-JV_IC1133904_KO0,22_KE23,59.htm?jl=1009301531047": "2026-11-03",
   "u:https://www.indeed.com/q-Elearning-jobs.html": "2026-11-03",
   "u:https://www.indeed.com/q-Instructional-Design-Nonprofit-jobs.html": "2026-11-03",
   "u:https://www.indeed.com/q-Nonprofit-Instructional-Design-jobs.html": "2026-11-03",
   "u:https://www.ispring.com/knowledge-hub/the-10-best-lmss-for-nonprofits": "2026-11-03",
+  "u:https://www.kenet.or.ke/content/kenet-strengthens-digital-learning-capacity-through-moodle-training-wrti": "2026-11-03",
   "u:https://www.kiron.digital/": "2026-11-03",
   "u:https://www.linkedin.com/jobs/moodle-jobs": "2026-11-03",
+  "u:https://www.linkedin.com/posts/dr-eleni-meletiadou_springer-edi-book-activity-7376198272115294209-TprE": "2026-11-03",
+  "u:https://www.linkedin.com/posts/sayedkenawy_aiineducation-springernature-scopus-activity-7389249946027372544-kPfI": "2026-11-03",
   "u:https://www.openlms.net/": "2026-11-03",
   "u:https://www.ruzuku.com/learn/articles/best-lms-for-nonprofits": "2026-11-03",
+  "u:https://www.scribd.com/document/982071732/DOC-20241010-WA0010": "2026-11-03",
   "u:https://www.softwareadvice.com/lms/nonprofit-lms-comparison/": "2026-11-03",
   "u:https://www.thelearningnuggets.com/digital-learning-consultancy.458474.en.html": "2026-11-03",
   "u:https://www.unicc.org/working-with-icc/individual-consultancy-instructional-designer/": "2026-11-03",
