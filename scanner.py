@@ -46,6 +46,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 import config
+import sources as srcmod
 
 logging.basicConfig(
     level=logging.INFO,
@@ -394,58 +395,93 @@ def fetch_generic_html(source_cfg: dict):
     return items, health
 
 
+def _brave_key() -> str:
+    return os.environ.get(getattr(config, "BRAVE_API_KEY_ENV", "BRAVE_API_KEY"), "")
+
+
 def _web_queries():
-    """Rotate through every topic×modifier combination across days so the
-    run cap never permanently starves the later queries."""
+    """Topic x modifier queries plus site-targeted queries aimed at the ATS
+    platforms organisations publish on. Rotates across days so the per-run
+    cap never permanently starves later queries."""
     combos = [(f"{t} {m}", m) for t in config.WEB_SEARCH_TOPICS
               for m in config.WEB_SEARCH_CATEGORY_MODIFIERS]
+    for site in getattr(config, "WEB_SEARCH_SITE_FILTERS", []):
+        for term in getattr(config, "WEB_SEARCH_SITE_TERMS", []):
+            combos.append((f'{site} "{term}"', "ATS site"))
     if not combos:
         return []
-    cap = min(config.MAX_WEB_SEARCH_QUERIES_PER_RUN, len(combos))
+    cap = config.MAX_WEB_SEARCH_QUERIES_PER_RUN
+    if _brave_key():
+        cap = getattr(config, "BRAVE_MAX_QUERIES_PER_RUN", 30)
+    cap = min(cap, len(combos))
     start = (_today_utc().toordinal() * cap) % len(combos)
     return [combos[(start + i) % len(combos)] for i in range(cap)]
 
 
+def _search_ddg(query: str):
+    resp = SESSION.post(DDG_HTML_ENDPOINT, data={"q": query}, timeout=config.REQUEST_TIMEOUT_SECONDS)
+    resp.raise_for_status()
+    soup = BeautifulSoup(resp.text, "html.parser")
+    out = []
+    for link in soup.select("a.result__a")[: config.MAX_RESULTS_PER_WEB_SEARCH_QUERY]:
+        parent = link.find_parent()
+        snip = parent.find_next_sibling("a", class_="result__snippet") if parent else None
+        out.append((link.get_text(strip=True), unwrap_ddg(link.get("href") or ""),
+                    snip.get_text(strip=True) if snip else ""))
+    return out
+
+
+def _search_brave(query: str, key: str):
+    resp = SESSION.get(
+        "https://api.search.brave.com/res/v1/web/search",
+        params={"q": query, "count": 20, "freshness": "pm"},
+        headers={"X-Subscription-Token": key, "Accept": "application/json"},
+        timeout=config.REQUEST_TIMEOUT_SECONDS,
+    )
+    resp.raise_for_status()
+    return [
+        (r.get("title", ""), r.get("url", ""),
+         BeautifulSoup(r.get("description", ""), "html.parser").get_text(" ", strip=True))
+        for r in resp.json().get("web", {}).get("results", [])
+    ]
+
+
 def fetch_web_search(source_cfg: dict):
-    health = {"raw": 0, "kept": 0, "error": None}
+    health = {"raw": 0, "kept": 0, "error": None, "boards": []}
     if not config.WEB_SEARCH_ENABLED:
         return [], health
 
+    key = _brave_key()
+    engine = "Brave" if key else "DuckDuckGo"
     items, seen_urls, failures = [], set(), 0
     queries = _web_queries()
+    log.info("  web search via %s, %d queries", engine, len(queries))
     for query, modifier in queries:
-        log.info("  web-searching: %s", query)
         try:
-            resp = SESSION.post(DDG_HTML_ENDPOINT, data={"q": query},
-                                timeout=config.REQUEST_TIMEOUT_SECONDS)
-            resp.raise_for_status()
+            results = _search_brave(query, key) if key else _search_ddg(query)
         except requests.RequestException as exc:
             failures += 1
             log.warning("  web search failed for '%s': %s", query, exc)
             time.sleep(1)
             continue
 
-        soup = BeautifulSoup(resp.text, "html.parser")
-        for link in soup.select("a.result__a")[: config.MAX_RESULTS_PER_WEB_SEARCH_QUERY]:
+        for title, href, snippet in results:
             health["raw"] += 1
-            title = link.get_text(strip=True)
-            href = unwrap_ddg(link.get("href") or "")
             if not title or not href.startswith("http") or is_blocked_url(href):
                 continue
+            health["boards"] += list(srcmod.discover_boards(href))
             if not matches_keywords(title) or href in seen_urls:
                 continue
             seen_urls.add(href)
-            parent = link.find_parent()
-            snip_tag = parent.find_next_sibling("a", class_="result__snippet") if parent else None
-            snippet = snip_tag.get_text(strip=True) if snip_tag else ""
             if config.REQUIRE_OPPORTUNITY_SIGNAL_FOR_WEB_SEARCH and not has_opportunity_signal(f"{title} {snippet}"):
                 continue
             items.append(_item(f"Web search ({modifier})", title, href, snippet=snippet))
-        time.sleep(1)  # be polite to DuckDuckGo
+        time.sleep(1.1)  # stay under free-tier rate limits (Brave: 1 req/s)
 
     health["kept"] = len(items)
+    health["boards"] = sorted(set(health["boards"]))
     if queries and failures == len(queries):
-        health["error"] = "all web-search requests failed (likely rate-limited or blocked)"
+        health["error"] = f"all {engine} requests failed (rate-limited, blocked, or bad API key)"
     return items, health
 
 
@@ -454,6 +490,7 @@ FETCHERS = {
     "generic_html": fetch_generic_html,
     "web_search": fetch_web_search,
 }
+FETCHERS.update(srcmod.build_fetchers(sys.modules[__name__]))
 
 
 # ---------------------------------------------------------------------------
@@ -512,7 +549,7 @@ def _csv_rows():
 
 def load_state() -> dict:
     today = _today_utc().isoformat()
-    state = {"version": 2, "seen": {}, "health": {}}
+    state = {"version": 2, "seen": {}, "health": {}, "boards": {}}
     if SEEN_STORE_PATH.exists():
         try:
             with open(SEEN_STORE_PATH, "r", encoding="utf-8") as f:
@@ -528,6 +565,7 @@ def load_state() -> dict:
         elif isinstance(data, dict):
             state["seen"] = data.get("seen", {})
             state["health"] = data.get("health", {})
+            state["boards"] = data.get("boards", {})
     # prune
     now = _today_utc()
     keep = {}
@@ -558,17 +596,20 @@ def append_to_log(items: list) -> None:
             w.writerow({**it, "deadline": it["deadline"].isoformat() if it.get("deadline") else ""})
 
 
-def update_health(state: dict, name: str, health: dict) -> "str | None":
-    """Tracks consecutive empty runs; returns an alert string when due."""
+def update_health(state: dict, name: str, health: dict, expect_matches: bool = True) -> "str | None":
+    """Tracks consecutive failing runs; returns an alert string when due.
+    A run fails on an error, or (for sources that should always list
+    something) on zero matches. Org careers pages and ATS boards often have
+    no relevant opening, so for them only errors count."""
     rec = state["health"].setdefault(name, {"zero_runs": 0, "last_ok": None})
-    if health["error"] or health["kept"] == 0:
+    if health["error"] or (expect_matches and health["kept"] == 0):
         rec["zero_runs"] += 1
     else:
         rec["zero_runs"], rec["last_ok"] = 0, _today_utc().isoformat()
     n = rec["zero_runs"]
     if n >= HEALTH_ALERT_AFTER_RUNS and (n - HEALTH_ALERT_AFTER_RUNS) % 7 == 0:
         why = health["error"] or "no matching results"
-        return f"{name}: nothing for {n} runs in a row ({why}). Last worked: {rec['last_ok'] or 'never'}."
+        return f"{name}: failing for {n} runs in a row ({why}). Last worked: {rec['last_ok'] or 'never'}."
     return None
 
 
@@ -642,6 +683,7 @@ def main() -> int:
     now_s = _today_utc().isoformat()
 
     sources = list(config.SOURCES)
+    sources += [srcmod.board_to_source(k) for k in sorted(state["boards"])]
     if config.WEB_SEARCH_ENABLED:
         sources.append({"name": "Open web search", "type": "web_search"})
     log.info("Starting scan across %d source(s)...", len(sources))
@@ -650,7 +692,11 @@ def main() -> int:
         fetcher = FETCHERS.get(src["type"])
         if fetcher is None:
             return src, [], {"raw": 0, "kept": 0, "error": f"unknown type {src['type']}"}
-        items, health = fetcher(src)
+        try:
+            items, health = fetcher(src)
+        except Exception as exc:  # one broken source must never sink the run
+            log.exception("[%s] fetcher crashed", src["name"])
+            return src, [], {"raw": 0, "kept": 0, "error": f"crashed: {exc}"[:160], "boards": []}
         return src, items, health
 
     t0 = time.time()
@@ -661,10 +707,26 @@ def main() -> int:
     for src, items, health in outcomes:
         log.info("%-42s raw=%-4d kept=%-3d %s", src["name"], health["raw"], health["kept"],
                  f"ERROR: {health['error']}" if health["error"] else "")
-        alert = update_health(state, src["name"], health)
+        expect = src.get("expect_matches", src["type"] in ("generic_html", "web_search", "reliefweb_api"))
+        alert = update_health(state, src["name"], health, expect)
+        if src.get("quiet"):  # auto-discovered boards: never alert, drop after 5 failures
+            alert = None
+            if state["health"][src["name"]]["zero_runs"] >= 5:
+                state["boards"].pop(src.get("_key"), None)
         if alert:
             alerts.append(alert)
         candidates.extend(items)
+        for key in health.get("boards", []):
+            state["boards"].setdefault(key, now_s)
+
+    # boards behind relevant postings are worth scanning in full from now on
+    for it in candidates:
+        for key in srcmod.discover_boards(it["url"]):
+            state["boards"].setdefault(key, now_s)
+    cap = getattr(config, "MAX_DYNAMIC_BOARDS", 60)
+    if len(state["boards"]) > cap:
+        newest = sorted(state["boards"].items(), key=lambda kv: kv[1], reverse=True)[:cap]
+        state["boards"] = dict(newest)
 
     # 1) dedupe FIRST (url + repost-by-title), 2) only then spend page fetches
     new, batch_keys = [], set()
@@ -697,8 +759,8 @@ def main() -> int:
         final.append(it)
     final.sort(key=lambda i: (-i["score"], CATEGORY_ORDER.index(i["category"])))
 
-    log.info("%d candidate(s) -> %d new, %d expired, %d to report (%.1fs)",
-             len(candidates), len(new), expired, len(final), time.time() - t0)
+    log.info("%d candidate(s) -> %d new, %d expired, %d to report (%.1fs); %d auto-discovered board(s) tracked",
+             len(candidates), len(new), expired, len(final), time.time() - t0, len(state["boards"]))
 
     if final:
         print("\n" + build_digest(final, []))

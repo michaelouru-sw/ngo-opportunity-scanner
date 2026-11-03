@@ -23,7 +23,7 @@ concurrency:
 jobs:
   scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -37,6 +37,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Install headless browser (for JavaScript-rendered career pages)
+        run: python -m playwright install --with-deps chromium
+
       - name: Run scanner
         env:
           # Set in: Repo Settings -> Secrets and variables -> Actions
@@ -44,6 +47,9 @@ jobs:
           # Registered ReliefWeb appname (https://apidoc.reliefweb.int/). Optional:
           # without it the ReliefWeb source is skipped and flagged in the digest.
           RELIEFWEB_APPNAME: ${{ secrets.RELIEFWEB_APPNAME }}
+          # Optional Brave Search API key (https://brave.com/search/api/) for
+          # much more reliable web search than scraping DuckDuckGo.
+          BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
         run: python3 scanner.py
 
       - name: Save results back to the repo

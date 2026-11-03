@@ -20,6 +20,11 @@ KEYWORDS = [
     "learning management system",
     "lms",
     "learning experience design",
+    "learning experience designer",
+    "learning designer",
+    "learning technologist",
+    "curriculum developer",
+    "course developer",
     "moodle",
     "curriculum digitization",
     "digital learning",
@@ -211,14 +216,14 @@ SOURCES = [
     },
     {
         "name": "Devex Jobs — Instructional Design",
-        "type": "generic_html",
+        "type": "org_site", "render": True, "expect_matches": True,
         "url": "https://www.devex.com/jobs/search?filter%5Bkeywords%5D=instructional+design",
         "css_selector": "a",
         "inherently_global": True,
     },
     {
         "name": "Idealist — Instructional Design (remote)",
-        "type": "generic_html",
+        "type": "org_site", "render": True, "expect_matches": True,
         "url": "https://www.idealist.org/en/jobs?q=instructional%20design&type=REMOTE",
         "css_selector": "a",
         "inherently_global": True,
@@ -226,7 +231,7 @@ SOURCES = [
     },
     {
         "name": "DevelopmentAid — Jobs",
-        "type": "generic_html",
+        "type": "org_site", "render": True, "expect_matches": True,
         "url": "https://www.developmentaid.org/jobs?keywords=instructional+design",
         "css_selector": "a",
         "inherently_global": True,
@@ -235,26 +240,51 @@ SOURCES = [
     },
     {
         "name": "DevelopmentAid — Tenders (consultancies)",
-        "type": "generic_html",
+        "type": "org_site", "render": True, "expect_matches": True,
         "url": "https://www.developmentaid.org/tenders/search?keywords=instructional+design",
         "css_selector": "a",
         "inherently_global": True,
     },
     {
         "name": "DevelopmentAid — Grants",
-        "type": "generic_html",
+        "type": "org_site", "render": True, "expect_matches": True,
         "url": "https://www.developmentaid.org/grants/search?keywords=education",
         "css_selector": "a",
         "inherently_global": True,
     },
 
-    # --- Kenya/local sources (disabled by default — uncomment to re-add) ---
-    # {
-    #     "name": "Corporate Staffing Kenya",
-    #     "type": "generic_html",
-    #     "url": "https://www.corporatestaffing.co.ke/?s=instructional+design",
-    #     "css_selector": "a",
-    # },
+    # -----------------------------------------------------------------------
+    # ORGANISATION SITES — SEEDS. Reached from a sandbox without internet, so
+    # these URLs are unverified: the first Actions run's source-health lines
+    # show which ones need fixing. Failures are isolated and reported, never
+    # fatal. Options per source: "render": True (JavaScript pages),
+    # "search_url": "...{q}..." (site search), "wp_search": True (WordPress
+    # sites), "region": "Kenya/Africa" (treat unlabelled results as local),
+    # "terms": [...] (override ORG_SEARCH_TERMS).
+    # ATS boards found on these pages are auto-discovered and scanned too.
+    # -----------------------------------------------------------------------
+    {"name": "World Bank Procurement (consulting notices)", "type": "worldbank"},
+    {"name": "UNDP Jobs", "type": "org_site", "url": "https://jobs.undp.org/cj_view_jobs.cfm"},
+    {"name": "UNICEF Jobs", "type": "org_site", "url": "https://jobs.unicef.org/en-us/listing/", "render": True},
+    {"name": "UNESCO Careers", "type": "org_site", "url": "https://careers.unesco.org/", "render": True},
+    {"name": "ILO Jobs", "type": "org_site", "url": "https://jobs.ilo.org/", "render": True},
+    {"name": "FAO Jobs", "type": "org_site", "url": "https://jobs.fao.org/", "render": True},
+    {"name": "WHO Careers", "type": "org_site", "url": "https://careers.who.int/careersection/ex/jobsearch.ftl", "render": True},
+    {"name": "UNITAR Vacancies", "type": "org_site", "url": "https://unitar.org/vacancy-announcements"},
+    {"name": "UNGM Notices", "type": "org_site", "url": "https://www.ungm.org/Public/Notice", "render": True},
+    {"name": "Medair Tenders", "type": "org_site", "url": "https://medair.org/tenders/"},
+    {"name": "NGO Tenders — ID consultants", "type": "org_site", "url": "https://ngotenders.net/instructional-design-consultants/"},
+    {"name": "fundsforNGOs", "type": "org_site", "search_url": "https://www.fundsforngos.org/?s={q}", "require_signal": True},
+    {"name": "BrighterMonday Kenya", "type": "org_site", "search_url": "https://www.brightermonday.co.ke/jobs?q={q}", "region": "Kenya/Africa"},
+    {"name": "Corporate Staffing Kenya", "type": "org_site", "search_url": "https://www.corporatestaffing.co.ke/?s={q}", "region": "Kenya/Africa"},
+    {"name": "KENET", "type": "org_site", "url": "https://www.kenet.or.ke", "wp_search": True, "region": "Kenya/Africa"},
+    {"name": "APHRC", "type": "org_site", "url": "https://aphrc.org", "wp_search": True, "region": "Kenya/Africa"},
+
+    # ATS boards you know about can be added directly (types: greenhouse,
+    # lever, smartrecruiters, workable, recruitee, workday), e.g.:
+    # {"name": "Example Org", "type": "lever", "token": "example", "quiet": True},
+    # {"name": "Example UN agency", "type": "workday", "host": "x.wd3.myworkdayjobs.com",
+    #  "tenant": "x", "site": "Careers", "quiet": True},
 ]
 
 # ---------------------------------------------------------------------------
@@ -283,6 +313,31 @@ PREFERRED_TERMS = {          # term -> points (each counted once)
 TOP_PICK_MIN_SCORE = 6
 
 # ---------------------------------------------------------------------------
+# ORGANISATION-SITE SEARCH
+# Terms used for ATS searches, site-search URLs and WordPress search.
+# ---------------------------------------------------------------------------
+ORG_SEARCH_TERMS = [
+    "instructional design", "e-learning", "learning management system",
+    "moodle", "digital learning",
+]
+MAX_DYNAMIC_BOARDS = 60  # auto-discovered ATS boards kept under watch
+
+# Site-targeted web queries: find postings on the platforms organisations
+# publish on, even when no aggregator lists them. Each filter x term is a query.
+WEB_SEARCH_SITE_FILTERS = [
+    "site:myworkdayjobs.com", "site:boards.greenhouse.io", "site:jobs.lever.co",
+    "site:apply.workable.com", "site:jobs.smartrecruiters.com", "site:recruitee.com",
+]
+WEB_SEARCH_SITE_TERMS = ["instructional design", "e-learning consultant", "moodle LMS"]
+
+# Optional Brave Search API (free tier ~2,000 queries/month): far more
+# reliable from cloud IPs than scraping DuckDuckGo, and returns fresh results.
+# Get a key at https://brave.com/search/api/ and add it as the BRAVE_API_KEY
+# repo secret. Without it the scanner falls back to DuckDuckGo.
+BRAVE_API_KEY_ENV = "BRAVE_API_KEY"
+BRAVE_MAX_QUERIES_PER_RUN = 30
+
+# ---------------------------------------------------------------------------
 # OUTPUT
 # ---------------------------------------------------------------------------
 LOG_CSV_PATH = "opportunities_log.csv"
@@ -304,5 +359,5 @@ EMAIL_SUBJECT = "New eLearning/EdTech opportunities found"
 # ---------------------------------------------------------------------------
 # NETWORK
 # ---------------------------------------------------------------------------
-REQUEST_TIMEOUT_SECONDS = 20
+REQUEST_TIMEOUT_SECONDS = 25
 USER_AGENT = "Mozilla/5.0 (compatible; OpportunityScanner/1.0; personal use)"

@@ -254,3 +254,17 @@ same URL twice, but if a site changes a job's URL slightly, it may look
 - **Dedup by repost.** Same title on the same site within 45 days is treated as a repost.
 - **Log columns:** `found_at, category, score, source, title, url, location, deadline, extra`.
   Old rows are migrated automatically on the first run.
+
+## Search expansion: organisation websites
+
+- **ATS APIs** (Greenhouse, Lever, Workday, SmartRecruiters, Workable, Recruitee) are read
+  directly, so postings that exist only on an organisation's own careers site are found.
+- **Self-expanding:** any ATS board seen on a careers page, search hit or matching job is
+  remembered and scanned fully on later runs (cap `MAX_DYNAMIC_BOARDS`; dead boards drop out).
+- **JavaScript sites** (UNICEF, ILO, Devex, Idealist, DevelopmentAid…) are rendered with a
+  headless browser (Playwright, installed by the workflow).
+- **Also:** WordPress site search for small NGO sites, World Bank procurement notices, and
+  site-targeted web queries (`site:myworkdayjobs.com "instructional design"` etc.).
+- **Better web search:** add a `BRAVE_API_KEY` secret (free tier) to replace DuckDuckGo scraping.
+- Organisation URLs in `config.SOURCES` are seeds. Check the first run's source-health lines
+  and fix or remove any that fail.
