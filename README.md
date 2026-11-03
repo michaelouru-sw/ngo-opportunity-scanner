@@ -280,3 +280,11 @@ same URL twice, but if a site changes a job's URL slightly, it may look
 - **Grants** now also match on topic + funding signal (`GRANT_TOPICS`), not just job keywords.
 - Dashboard: Academic filter and a "confirmed no-APC only" switch.
 - The CSV gains an `apc` column; existing rows migrate on the next run.
+
+## LinkedIn
+
+LinkedIn prohibits scraping, so the scanner reads the **job-alert emails LinkedIn sends you**
+(Gmail IMAP, read-only, same app password as the digest) and also searches for public
+`linkedin.com/jobs/view` pages through the web search. Setup: on linkedin.com/jobs run a search,
+turn on "Job alert" with email notifications, for example "instructional designer",
+"e-learning consultant", "Moodle LMS", "learning experience designer" (Kenya + remote).

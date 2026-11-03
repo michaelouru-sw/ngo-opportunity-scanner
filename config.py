@@ -360,6 +360,12 @@ SOURCES = [
     {"name": "KENET", "type": "org_site", "url": "https://www.kenet.or.ke", "wp_search": True, "region": "Kenya/Africa"},
     {"name": "APHRC", "type": "org_site", "url": "https://aphrc.org", "wp_search": True, "region": "Kenya/Africa"},
 
+    # LinkedIn: reads the job-alert emails LinkedIn sends YOU (IMAP, read-only, same
+    # Gmail app password as the digest). Create alerts at linkedin.com/jobs with
+    # "email" notifications; saved searches that work well: "instructional designer",
+    # "e-learning consultant", "Moodle LMS", "learning experience designer".
+    {"name": "LinkedIn job alerts (email)", "type": "linkedin_alerts", "days": 4, "max_emails": 60},
+
     # ATS boards you know about can be added directly (types: greenhouse,
     # lever, smartrecruiters, workable, recruitee, workday), e.g.:
     # {"name": "Example Org", "type": "lever", "token": "example", "quiet": True},
@@ -413,6 +419,7 @@ MAX_DYNAMIC_BOARDS = 60  # auto-discovered ATS boards kept under watch
 WEB_SEARCH_SITE_FILTERS = [
     "site:myworkdayjobs.com", "site:boards.greenhouse.io", "site:jobs.lever.co",
     "site:apply.workable.com", "site:jobs.smartrecruiters.com", "site:recruitee.com",
+    "site:linkedin.com/jobs/view",   # public LinkedIn job pages as indexed by the search engine
 ]
 WEB_SEARCH_SITE_TERMS = ["instructional design", "e-learning consultant", "moodle LMS"]
 

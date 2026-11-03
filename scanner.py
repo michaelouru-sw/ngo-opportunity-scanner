@@ -815,7 +815,9 @@ def main() -> int:
     # 1) dedupe FIRST (url + repost-by-title), 2) only then spend page fetches
     new, batch_keys = [], set()
     for it in candidates:
-        keys = {url_key(it["url"]), title_key(it["title"], it["url"])}
+        keys = {url_key(it["url"])}
+        if not it.get("no_title_dedupe"):
+            keys.add(title_key(it["title"], it["url"]))
         if keys & seen.keys() or keys & batch_keys:
             continue
         batch_keys |= keys
@@ -825,7 +827,8 @@ def main() -> int:
     def wants_apc(i):
         return i["category"] == "Academic" and not i.get("apc")
 
-    need_detail = [i for i in new if not i.get("deadline") or wants_apc(i)] if config.CHECK_DEADLINES_ON_DETAIL_PAGES else []
+    need_detail = [i for i in new if (not i.get("deadline") or wants_apc(i)) and "linkedin.com" not in i["url"]] \
+        if config.CHECK_DEADLINES_ON_DETAIL_PAGES else []  # LinkedIn pages sit behind a login wall
     need_detail = need_detail[: config.MAX_DETAIL_PAGE_CHECKS_PER_RUN]
     if need_detail:
         with ThreadPoolExecutor(max_workers=config.MAX_WORKERS) as pool:

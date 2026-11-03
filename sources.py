@@ -23,8 +23,12 @@ Built against each service's documented response shape; nothing here is
 assumed to work until a run's source-health report says so.
 """
 
+import email
+import imaplib
+import os
 import re
 import threading
+from datetime import date, timedelta
 from urllib.parse import quote, quote_plus, urljoin
 
 from bs4 import BeautifulSoup
@@ -262,6 +266,85 @@ def build_fetchers(core) -> dict:
                 items.append(it)
         return fin(items, h)
 
+    # ---- LinkedIn: your own job-alert emails (no scraping) -----------------
+
+    _LI_JOB = re.compile(r"linkedin\.com/(?:comm/)?jobs/view/(?:[^/?#]*?-)?(\d{6,})", re.I)
+    _LI_GENERIC = {"view job", "apply", "apply now", "see all jobs", "view jobs", "unsubscribe", "easy apply"}
+
+    def _email_html(msg):
+        for part in msg.walk():
+            if part.get_content_type() == "text/html":
+                raw = part.get_payload(decode=True) or b""
+                return raw.decode(part.get_content_charset() or "utf-8", errors="replace")
+        return ""
+
+    def _context(a):
+        """Text block around a job link (company / location lines)."""
+        node = a
+        for _ in range(4):
+            node = node.parent
+            if node is None:
+                break
+            txt = node.get_text(" ", strip=True)
+            if 40 < len(txt) < 400:
+                return txt
+        return a.get_text(" ", strip=True)
+
+    def linkedin_alerts(src):
+        """Reads LinkedIn job-alert emails from your Gmail over IMAP (read-only)
+        using the same app password as the email digest. LinkedIn does not
+        allow scraping, so this uses the alerts LinkedIn itself sends you."""
+        h = H()
+        pw = os.environ.get(cfg.SMTP_PASSWORD_ENV_VAR, "")
+        if not pw:
+            h["error"] = f"config: {cfg.SMTP_PASSWORD_ENV_VAR} not set (needed to read alert emails)"
+            return [], h
+        found = {}
+        mail = None
+        try:
+            mail = imaplib.IMAP4_SSL("imap.gmail.com", timeout=30)
+            mail.login(cfg.SMTP_USERNAME, pw)
+            mail.select(src.get("mailbox", "INBOX"), readonly=True)
+            since = (date.today() - timedelta(days=src.get("days", 4))).strftime("%d-%b-%Y")
+            _, data = mail.search(None, f'(SINCE "{since}" FROM "linkedin.com")')
+            ids = data[0].split()[-src.get("max_emails", 60):]
+            h["raw"] = len(ids)
+            for mid in ids:
+                _, msg_data = mail.fetch(mid, "(BODY.PEEK[])")
+                soup = BeautifulSoup(_email_html(email.message_from_bytes(msg_data[0][1])), "html.parser")
+                for a in soup.find_all("a", href=True):
+                    m = _LI_JOB.search(a["href"])
+                    text = a.get_text(" ", strip=True)
+                    if not m or len(text) < 4 or text.lower() in _LI_GENERIC:
+                        continue
+                    jid = m.group(1)
+                    if jid not in found or len(text) > len(found[jid][0]):
+                        found[jid] = (text, _context(a))
+        except Exception as exc:
+            h["error"] = f"IMAP: {exc}"[:160]
+            return [], h
+        finally:
+            if mail is not None:
+                try:
+                    mail.logout()
+                except Exception:
+                    pass
+
+        items = []
+        for jid, (title, ctx) in found.items():
+            if core.EXCLUDE_RE and core.EXCLUDE_RE.search(f"{title}".lower()):
+                continue
+            it = mk(src, title, f"https://www.linkedin.com/jobs/view/{jid}/", loc=ctx, snippet=ctx)
+            if it["category"] == "Uncertain":
+                it["category"] = "Job"
+            it["no_title_dedupe"] = True  # same title at different companies are different jobs
+            items.append(it)
+        if h["raw"] == 0:
+            h["error"] = (f"no LinkedIn alert emails in the last {src.get('days', 4)} days "
+                          "(create job alerts on linkedin.com/jobs with email notifications)")
+        h["kept"] = len(items)
+        return items, h
+
     # ---- Any organisation page -------------------------------------------
 
     def render(url, src):
@@ -343,4 +426,5 @@ def build_fetchers(core) -> dict:
         "greenhouse": greenhouse, "lever": lever, "smartrecruiters": smartrecruiters,
         "workable": workable, "recruitee": recruitee, "workday": workday,
         "worldbank": worldbank, "org_site": org_site, "doaj": doaj,
+        "linkedin_alerts": linkedin_alerts,
     }
