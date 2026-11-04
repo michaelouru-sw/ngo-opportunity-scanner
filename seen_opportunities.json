@@ -5,13 +5,17 @@
  "health": {
   "APHRC": {
    "last_ok": "2026-11-04",
-   "zero_runs": 0
+   "zero_runs": 1
   },
   "AfDB Procurement": {
    "last_ok": null,
-   "zero_runs": 1
+   "zero_runs": 2
   },
   "Amref Health Africa Careers": {
+   "last_ok": "2026-11-04",
+   "zero_runs": 0
+  },
+  "Board smartrecruiters:amrefhealthafrica4": {
    "last_ok": "2026-11-04",
    "zero_runs": 0
   },
@@ -21,7 +25,7 @@
   },
   "Corporate Staffing Kenya": {
    "last_ok": "2026-11-04",
-   "zero_runs": 0
+   "zero_runs": 1
   },
   "DOAJ \u2014 journals with no APC": {
    "last_ok": "2026-11-04",
@@ -29,39 +33,39 @@
   },
   "DevelopmentAid \u2014 Grants": {
    "last_ok": null,
-   "zero_runs": 2
+   "zero_runs": 3
   },
   "DevelopmentAid \u2014 Jobs": {
    "last_ok": null,
-   "zero_runs": 2
+   "zero_runs": 3
   },
   "DevelopmentAid \u2014 Tenders (consultancies)": {
    "last_ok": null,
-   "zero_runs": 2
+   "zero_runs": 3
   },
   "Devex Funding (grants)": {
    "last_ok": null,
-   "zero_runs": 1
+   "zero_runs": 2
   },
   "Devex Jobs \u2014 Instructional Design": {
    "last_ok": null,
-   "zero_runs": 2
+   "zero_runs": 3
   },
   "EasyChair CFPs \u2014 e-learning": {
    "last_ok": null,
-   "zero_runs": 2
+   "zero_runs": 3
   },
   "EasyChair CFPs \u2014 education technology": {
    "last_ok": null,
-   "zero_runs": 2
+   "zero_runs": 3
   },
   "EasyChair CFPs \u2014 educational technologies": {
    "last_ok": null,
-   "zero_runs": 2
+   "zero_runs": 3
   },
   "Emerald \u2014 calls for books": {
    "last_ok": null,
-   "zero_runs": 2
+   "zero_runs": 3
   },
   "FAO Jobs": {
    "last_ok": "2026-11-04",
@@ -72,8 +76,8 @@
    "zero_runs": 0
   },
   "IGI Global \u2014 calls for chapters": {
-   "last_ok": "2026-11-03",
-   "zero_runs": 1
+   "last_ok": "2026-11-04",
+   "zero_runs": 0
   },
   "ILO Jobs": {
    "last_ok": "2026-11-04",
@@ -81,11 +85,11 @@
   },
   "IRC Careers": {
    "last_ok": null,
-   "zero_runs": 1
+   "zero_runs": 2
   },
   "Idealist \u2014 Instructional Design (remote)": {
-   "last_ok": null,
-   "zero_runs": 2
+   "last_ok": "2026-11-04",
+   "zero_runs": 0
   },
   "Impactpool": {
    "last_ok": "2026-11-04",
@@ -121,27 +125,27 @@
   },
   "Penn CFP list \u2014 education": {
    "last_ok": "2026-11-04",
-   "zero_runs": 0
+   "zero_runs": 1
   },
   "ReliefWeb Jobs (global)": {
    "last_ok": null,
-   "zero_runs": 2
+   "zero_runs": 3
   },
   "ReliefWeb site search (jobs)": {
    "last_ok": null,
-   "zero_runs": 1
+   "zero_runs": 2
   },
   "ReliefWeb site search (training/other)": {
    "last_ok": null,
-   "zero_runs": 1
+   "zero_runs": 2
   },
   "Save the Children Jobs": {
    "last_ok": null,
-   "zero_runs": 1
+   "zero_runs": 2
   },
   "UN Careers": {
    "last_ok": null,
-   "zero_runs": 1
+   "zero_runs": 2
   },
   "UNDP Jobs": {
    "last_ok": "2026-11-04",
@@ -153,7 +157,7 @@
   },
   "UNGM Notices": {
    "last_ok": null,
-   "zero_runs": 2
+   "zero_runs": 3
   },
   "UNICEF Jobs": {
    "last_ok": "2026-11-04",
@@ -161,7 +165,7 @@
   },
   "UNICEF Supply & Procurement Notices": {
    "last_ok": null,
-   "zero_runs": 1
+   "zero_runs": 2
   },
   "UNITAR Vacancies": {
    "last_ok": "2026-11-04",
@@ -173,11 +177,11 @@
   },
   "UNjobs \u2014 Instructional Design": {
    "last_ok": "2026-11-04",
-   "zero_runs": 0
+   "zero_runs": 1
   },
   "UNjobs \u2014 Learning Management Systems": {
    "last_ok": "2026-11-04",
-   "zero_runs": 0
+   "zero_runs": 1
   },
   "WHO Careers": {
    "last_ok": "2026-11-04",
@@ -197,7 +201,7 @@
   },
   "fundsforNGOs (grants)": {
    "last_ok": null,
-   "zero_runs": 2
+   "zero_runs": 3
   }
  },
  "seen": {
@@ -222,6 +226,7 @@
   "t:facebook.com|the call for proposals is": "2026-11-03",
   "t:findrfp.com|e learning systems bids rfps": "2026-11-04",
   "t:globaltenders.com|latest elearning tenders and rfp": "2026-11-04",
+  "t:idealist.org|full time instructional coach and": "2026-11-04",
   "t:impactpool.org|program officer instructional design irc": "2026-11-04",
   "t:impactpool.org|program officer instructional design multimedia": "2026-11-04",
   "t:jios.foi.hr|jios special issue actionable learning": "2026-11-04",
@@ -264,6 +269,7 @@
   "t:scribd.com|call for papers neo liberal": "2026-11-03",
   "t:starbridge.ai|find learning management systems rfps": "2026-11-04",
   "t:tenderspedia.com|18 latest global moodle tenders": "2026-11-04",
+  "t:theacbf.org|retainer contract for consultancy services": "2026-11-04",
   "t:unjobnet.org|medair instructional design and e": "2026-11-03",
   "t:unjobs.org|asistente tutor a e learning": "2026-09-22",
   "t:unjobs.org|call for proposals for specialized": "2026-10-29",
@@ -300,6 +306,7 @@
   "t:wikicfp.com|canceled ai voyage 2026": "2026-11-04",
   "t:wikicfp.com|cgi ai 2027 computer graphics": "2026-11-04",
   "t:wikicfp.com|cisse 2026 cybersecurity education con": "2026-11-04",
+  "t:wikicfp.com|comparative drama conference 2027": "2026-11-04",
   "t:wikicfp.com|cross ai 2026": "2026-11-04",
   "t:wikicfp.com|cross ai aai bd 2026": "2026-11-04",
   "t:wikicfp.com|cross ai aimg 2026": "2026-11-04",
@@ -328,13 +335,20 @@
   "t:wikicfp.com|girst 2026 2026 5th international": "2026-11-04",
   "t:wikicfp.com|governing gp ai systems 2026": "2026-11-04",
   "t:wikicfp.com|hcc ai 2026 workshop on": "2026-11-04",
+  "t:wikicfp.com|icaid 2026 2026 5th international": "2026-11-04",
+  "t:wikicfp.com|iceds 2027 2027 8th international": "2026-11-04",
+  "t:wikicfp.com|iceds ei 2027": "2026-11-04",
   "t:wikicfp.com|icela 2026 2026 6th international": "2026-11-04",
   "t:wikicfp.com|icise ie 2026 ieee 2026": "2026-11-04",
+  "t:wikicfp.com|icme 2026 14th international conference": "2026-11-04",
   "t:wikicfp.com|icmlca 2026 ieee 2026 7th": "2026-11-04",
+  "t:wikicfp.com|icmr 2026 international conference on": "2026-11-04",
   "t:wikicfp.com|icsys 2026 2026 international conference": "2026-11-04",
+  "t:wikicfp.com|ijcsit 2026 international journal of": "2026-11-04",
   "t:wikicfp.com|language disorders 2026 online 2026": "2026-11-04",
   "t:wikicfp.com|language education 2026 online 2026": "2026-11-04",
   "t:wikicfp.com|learning analytics": "2026-11-03",
+  "t:wikicfp.com|learning analytics call for papers": "2026-11-04",
   "t:wikicfp.com|learning optimization 2026": "2026-11-04",
   "t:wikicfp.com|learning technology": "2026-11-03",
   "t:wikicfp.com|mit ai conference 2026": "2026-11-04",
@@ -344,6 +358,7 @@
   "t:wikicfp.com|pandemics analytics 2026": "2026-11-04",
   "t:wikicfp.com|pca comm digital culture 2027": "2026-11-04",
   "t:wikicfp.com|post digital democracies 2026": "2026-11-04",
+  "t:wikicfp.com|rsae 2027 ieee 2027 8th": "2026-11-04",
   "t:wikicfp.com|scsn ai 2027 15th international": "2026-11-04",
   "t:wikicfp.com|si ai for control systems": "2026-11-04",
   "t:wikicfp.com|sipp 2026 14th international conference": "2026-11-04",
@@ -355,6 +370,7 @@
   "u:http://www.wikicfp.com/cfp/call?conference=educational technology": "2026-11-03",
   "u:http://www.wikicfp.com/cfp/call?conference=learning analytics": "2026-11-03",
   "u:http://www.wikicfp.com/cfp/call?conference=learning technology": "2026-11-03",
+  "u:http://www.wikicfp.com/cfp/call?conference=learning%20analytics": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=137856&copyownerid=169910": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=175712&copyownerid=169910": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=189346&copyownerid=194616": "2026-11-04",
@@ -362,7 +378,9 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=191020&copyownerid=66551": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=191252&copyownerid=196290": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=191438&copyownerid=196569": "2026-11-04",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=191892&copyownerid=71353": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=192002&copyownerid=197001": "2026-11-04",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=192075&copyownerid=33993": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=192129&copyownerid=46167": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=192361&copyownerid=320": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=192402&copyownerid=182680": "2026-11-04",
@@ -386,10 +404,13 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=201128&copyownerid=199419": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=201388&copyownerid=199571": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=201627&copyownerid=199687": "2026-11-04",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=201700&copyownerid=13881": "2026-11-04",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=201701&copyownerid=13881": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=202670&copyownerid=190618": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=202823&copyownerid=182680": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=202953&copyownerid=182680": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=202955&copyownerid=182680": "2026-11-04",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203010&copyownerid=71353": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203024&copyownerid=200246": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203083&copyownerid=200301": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203130&copyownerid=71296": "2026-11-04",
@@ -407,6 +428,7 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203513&copyownerid=169910": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203587&copyownerid=169910": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203632&copyownerid=163220": "2026-11-04",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203678&copyownerid=13881": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203693&copyownerid=200706": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203700&copyownerid=200711": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203723&copyownerid=182680": "2026-11-04",
@@ -415,6 +437,8 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203887&copyownerid=182680": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203935&copyownerid=182680": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204094&copyownerid=169910": "2026-11-04",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204137&copyownerid=163220": "2026-11-04",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204141&copyownerid=200910": "2026-11-04",
   "u:https://ca.linkedin.com/in/grantvanb": "2026-11-03",
   "u:https://campuslifestyle.org/2026/08/04/unicef-digital-learning-consultant/": "2026-11-03",
   "u:https://christytuckerlearning.com/professional-organizations-for-instructional-designers/": "2026-11-03",
@@ -475,6 +499,7 @@
   "u:https://scholarworks.iu.edu/journals/index.php/jotlt/announcement/view/249": "2026-11-03",
   "u:https://starbridge.ai/catalog/rfp/learning-management-systems": "2026-11-04",
   "u:https://teachers.institute/educational-technology-overview/learning-management-systems-power-online-education/": "2026-11-03",
+  "u:https://theacbf.org/consultancies/retainer-contract-for-consultancy-services-for-instructional-design-consultant-e-learning-module-development/": "2026-11-04",
   "u:https://unitar.org/vacancy-announcements/roster/consultant-instructional-design/60": "2026-11-03",
   "u:https://unjobs.org/skills/instructional-design": "2026-11-03",
   "u:https://unjobs.org/skills/instructional-design-models": "2026-11-03",
@@ -560,6 +585,7 @@
   "u:https://www.facebook.com/eLearningAfricaConference/posts/-the-call-for-proposals-is-now-open-for-elearning-africa-2026-taking-place-from-/1205848991583524/": "2026-11-03",
   "u:https://www.glassdoor.com/job-listing/instructional-designer-goodwill-of-central-northern-arizona-JV_IC1133904_KO0,22_KE23,59.htm?jl=1009301531047": "2026-11-03",
   "u:https://www.globaltenders.com/rfp/elearning-tenders": "2026-11-04",
+  "u:https://www.idealist.org/en/nonprofit-job/20b901ae6a534392afc249c9a9e0dc16-full-time-instructional-coach-and-curriculum-developer-focus-on-ells-ela-and-math-hybrid-position-new-york-metropolitan-area-with-about-25-travel-in-and-around-new-york-state-bridges-to-academic-success-new-york": "2026-11-04",
   "u:https://www.impactpool.org/jobs/1238745": "2026-11-04",
   "u:https://www.impactpool.org/jobs/1239414": "2026-11-04",
   "u:https://www.indeed.com/q-Elearning-jobs.html": "2026-11-03",
