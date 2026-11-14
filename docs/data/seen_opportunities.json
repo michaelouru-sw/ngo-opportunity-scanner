@@ -9,211 +9,211 @@
  },
  "health": {
   "APHRC": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "AfDB Procurement": {
    "last_ok": null,
-   "zero_runs": 11
+   "zero_runs": 12
   },
   "Amref Health Africa Careers": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "Board smartrecruiters:amrefhealthafrica4": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "Board workday:digikey/Digi-Key": {
    "last_ok": "2026-11-13",
-   "zero_runs": 0
+   "zero_runs": 1
   },
   "Board workday:firstam/firstamericancareers": {
    "last_ok": "2026-11-13",
-   "zero_runs": 0
+   "zero_runs": 1
   },
   "Board workday:kla/Search": {
    "last_ok": "2026-11-13",
-   "zero_runs": 0
+   "zero_runs": 1
   },
   "Board workday:osv-chegg/Internships": {
    "last_ok": null,
-   "zero_runs": 1
+   "zero_runs": 2
   },
   "Board workday:wpi/WPI_External_Career_Site": {
    "last_ok": "2026-11-13",
-   "zero_runs": 0
+   "zero_runs": 1
   },
   "BrighterMonday Kenya": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "Corporate Staffing Kenya": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "DOAJ \u2014 journals with no APC": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "DevelopmentAid \u2014 Grants": {
    "last_ok": null,
-   "zero_runs": 12
+   "zero_runs": 13
   },
   "DevelopmentAid \u2014 Jobs": {
    "last_ok": null,
-   "zero_runs": 12
+   "zero_runs": 13
   },
   "DevelopmentAid \u2014 Tenders (consultancies)": {
    "last_ok": null,
-   "zero_runs": 12
+   "zero_runs": 13
   },
   "Devex Funding (grants)": {
    "last_ok": null,
-   "zero_runs": 11
+   "zero_runs": 12
   },
   "Devex Jobs \u2014 Instructional Design": {
    "last_ok": null,
-   "zero_runs": 12
+   "zero_runs": 13
   },
   "EasyChair CFPs \u2014 e-learning": {
    "last_ok": null,
-   "zero_runs": 12
+   "zero_runs": 13
   },
   "EasyChair CFPs \u2014 education technology": {
    "last_ok": null,
-   "zero_runs": 12
+   "zero_runs": 13
   },
   "EasyChair CFPs \u2014 educational technologies": {
    "last_ok": null,
-   "zero_runs": 12
+   "zero_runs": 13
   },
   "Emerald \u2014 calls for books": {
    "last_ok": null,
-   "zero_runs": 12
+   "zero_runs": 13
   },
   "FAO Jobs": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "GIZ Jobs": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "IGI Global \u2014 calls for chapters": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "ILO Jobs": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "IRC Careers": {
    "last_ok": null,
-   "zero_runs": 11
+   "zero_runs": 12
   },
   "Idealist \u2014 Instructional Design (remote)": {
    "last_ok": "2026-11-04",
-   "zero_runs": 9
+   "zero_runs": 10
   },
   "Impactpool": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "KENET": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "Kenya Public Tenders (PPIP)": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "LinkedIn job alerts (email)": {
    "last_ok": "2026-11-13",
-   "zero_runs": 0
+   "zero_runs": 1
   },
   "Medair Tenders": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "Mercy Corps Careers": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "NGO Tenders \u2014 ID consultants": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "Open web search": {
-   "last_ok": "2026-11-11",
-   "zero_runs": 2
+   "last_ok": "2026-11-14",
+   "zero_runs": 0
   },
   "Penn CFP list \u2014 education": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "ReliefWeb Jobs (global)": {
    "last_ok": null,
-   "zero_runs": 12
+   "zero_runs": 13
   },
   "ReliefWeb site search (jobs)": {
    "last_ok": null,
-   "zero_runs": 11
+   "zero_runs": 12
   },
   "ReliefWeb site search (training/other)": {
    "last_ok": null,
-   "zero_runs": 11
+   "zero_runs": 12
   },
   "Save the Children Jobs": {
    "last_ok": null,
-   "zero_runs": 11
+   "zero_runs": 12
   },
   "UN Careers": {
    "last_ok": null,
-   "zero_runs": 11
+   "zero_runs": 12
   },
   "UNDP Jobs": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "UNESCO Careers": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "UNGM Notices": {
    "last_ok": null,
-   "zero_runs": 12
+   "zero_runs": 13
   },
   "UNICEF Jobs": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "UNICEF Supply & Procurement Notices": {
    "last_ok": null,
-   "zero_runs": 11
+   "zero_runs": 12
   },
   "UNITAR Vacancies": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "UNjobs \u2014 E-learning": {
    "last_ok": "2026-11-08",
-   "zero_runs": 5
+   "zero_runs": 6
   },
   "UNjobs \u2014 Instructional Design": {
    "last_ok": "2026-11-09",
-   "zero_runs": 4
+   "zero_runs": 5
   },
   "UNjobs \u2014 Learning Management Systems": {
    "last_ok": "2026-11-09",
-   "zero_runs": 4
+   "zero_runs": 5
   },
   "WHO Careers": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "WikiCFP \u2014 calls for papers": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "World Bank Procurement (consulting notices)": {
@@ -221,12 +221,12 @@
    "zero_runs": 0
   },
   "World Bank Procurement (open consulting notices)": {
-   "last_ok": "2026-11-13",
+   "last_ok": "2026-11-14",
    "zero_runs": 0
   },
   "fundsforNGOs (grants)": {
    "last_ok": null,
-   "zero_runs": 12
+   "zero_runs": 13
   }
  },
  "seen": {
@@ -262,6 +262,11 @@
   "t:globaltenders.com|moodle learning management system lms": "2026-11-10",
   "t:grantedai.com|open call for proposals ai": "2026-11-05",
   "t:idealist.org|full time instructional coach and": "2026-11-04",
+  "t:impactpool.org|e learning consultant rome italy": "2026-11-14",
+  "t:impactpool.org|e learning consultant unctad united": "2026-11-14",
+  "t:impactpool.org|instructional design consultant who world": "2026-11-14",
+  "t:impactpool.org|instructional designer and learning content": "2026-11-14",
+  "t:impactpool.org|international consultant e learning design": "2026-11-14",
   "t:impactpool.org|program officer instructional design irc": "2026-11-04",
   "t:impactpool.org|program officer instructional design multimedia": "2026-11-04",
   "t:jios.foi.hr|jios special issue actionable learning": "2026-11-04",
@@ -562,6 +567,7 @@
   "t:wikicfp.com|ijngn 2026 15th international conference": "2026-11-10",
   "t:wikicfp.com|ijsea 2026 international journal of": "2026-11-10",
   "t:wikicfp.com|ijwest 2026 international journal of": "2026-11-11",
+  "t:wikicfp.com|imacs 2027 ieee international conference": "2026-11-14",
   "t:wikicfp.com|imbsa 2027 10th international symposium": "2026-11-13",
   "t:wikicfp.com|imip 2027 2027 9th international": "2026-11-12",
   "t:wikicfp.com|ios mai 2027 2027 2nd": "2026-11-10",
@@ -922,6 +928,7 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204204&copyownerid=45217": "2026-11-13",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204206&copyownerid=45217": "2026-11-13",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204207&copyownerid=45217": "2026-11-13",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204217&copyownerid=60067": "2026-11-14",
   "u:https://ca.linkedin.com/in/grantvanb": "2026-11-03",
   "u:https://campuslifestyle.org/2026/08/04/unicef-digital-learning-consultant/": "2026-11-03",
   "u:https://christytuckerlearning.com/professional-organizations-for-instructional-designers/": "2026-11-03",
@@ -1090,8 +1097,13 @@
   "u:https://www.globaltenders.com/rfp/elearning-tenders": "2026-11-04",
   "u:https://www.globaltenders.com/tender-detail/moodle-learning-management-system-lms-mode-DHLfHipmel3ks8Ry": "2026-11-10",
   "u:https://www.idealist.org/en/nonprofit-job/20b901ae6a534392afc249c9a9e0dc16-full-time-instructional-coach-and-curriculum-developer-focus-on-ells-ela-and-math-hybrid-position-new-york-metropolitan-area-with-about-25-travel-in-and-around-new-york-state-bridges-to-academic-success-new-york": "2026-11-04",
+  "u:https://www.impactpool.org/jobs/1100952": "2026-11-14",
   "u:https://www.impactpool.org/jobs/1238745": "2026-11-04",
   "u:https://www.impactpool.org/jobs/1239414": "2026-11-04",
+  "u:https://www.impactpool.org/jobs/1240443": "2026-11-14",
+  "u:https://www.impactpool.org/jobs/1243009": "2026-11-14",
+  "u:https://www.impactpool.org/jobs/1243301": "2026-11-14",
+  "u:https://www.impactpool.org/jobs/784242": "2026-11-14",
   "u:https://www.indeed.com/q-Elearning-jobs.html": "2026-11-03",
   "u:https://www.indeed.com/q-Instructional-Design-Nonprofit-jobs.html": "2026-11-03",
   "u:https://www.indeed.com/q-Nonprofit-Instructional-Design-jobs.html": "2026-11-03",
