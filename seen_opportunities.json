@@ -10,61 +10,65 @@
   "smartrecruiters:amrefhealthafrica4": "2026-11-04",
   "workday:digikey.wd5|digikey|Digi-Key": "2026-11-12",
   "workday:firstam.wd1|firstam|firstamericancareers": "2026-11-12",
-  "workday:kla.wd1|kla|Search": "2026-11-12",
+  "workday:kla.wd1|kla|Search": "2026-11-20",
   "workday:wpi.wd5|wpi|WPI_External_Career_Site": "2026-11-12"
  },
  "health": {
   "APHRC": {
-   "last_ok": "2026-11-18",
-   "zero_runs": 1
+   "last_ok": "2026-11-20",
+   "zero_runs": 0
   },
   "AfDB Procurement": {
    "last_ok": null,
-   "zero_runs": 17
+   "zero_runs": 18
   },
   "Amref Health Africa Careers": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "Board lever:corebts": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "Board lever:jobgether": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "Board lever:kpaonline": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "Board lever:lingarogroup": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "Board lever:spotify": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "Board lever:telesat": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
+   "zero_runs": 0
+  },
+  "Board recruitee:infoprolearning": {
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "Board smartrecruiters:amrefhealthafrica4": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "Board workday:digikey/Digi-Key": {
    "last_ok": "2026-11-19",
-   "zero_runs": 0
+   "zero_runs": 1
   },
   "Board workday:firstam/firstamericancareers": {
-   "last_ok": "2026-11-15",
-   "zero_runs": 4
+   "last_ok": "2026-11-20",
+   "zero_runs": 0
   },
   "Board workday:kla/Search": {
    "last_ok": "2026-11-15",
-   "zero_runs": 4
+   "zero_runs": 5
   },
   "Board workday:osv-chegg/Internships": {
    "last_ok": null,
@@ -72,178 +76,178 @@
   },
   "Board workday:wpi/WPI_External_Career_Site": {
    "last_ok": "2026-11-19",
-   "zero_runs": 0
+   "zero_runs": 1
   },
   "BrighterMonday Kenya": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "Corporate Staffing Kenya": {
-   "last_ok": "2026-11-18",
-   "zero_runs": 1
+   "last_ok": "2026-11-20",
+   "zero_runs": 0
   },
   "DOAJ \u2014 journals with no APC": {
    "last_ok": "2026-11-19",
-   "zero_runs": 0
+   "zero_runs": 1
   },
   "DevelopmentAid \u2014 Grants": {
    "last_ok": null,
-   "zero_runs": 18
+   "zero_runs": 19
   },
   "DevelopmentAid \u2014 Jobs": {
    "last_ok": null,
-   "zero_runs": 18
+   "zero_runs": 19
   },
   "DevelopmentAid \u2014 Tenders (consultancies)": {
    "last_ok": null,
-   "zero_runs": 18
+   "zero_runs": 19
   },
   "Devex Funding (grants)": {
    "last_ok": null,
-   "zero_runs": 17
+   "zero_runs": 18
   },
   "Devex Jobs \u2014 Instructional Design": {
    "last_ok": null,
-   "zero_runs": 18
+   "zero_runs": 19
   },
   "EasyChair CFPs \u2014 e-learning": {
    "last_ok": null,
-   "zero_runs": 18
+   "zero_runs": 19
   },
   "EasyChair CFPs \u2014 education technology": {
    "last_ok": null,
-   "zero_runs": 18
+   "zero_runs": 19
   },
   "EasyChair CFPs \u2014 educational technologies": {
    "last_ok": null,
-   "zero_runs": 18
+   "zero_runs": 19
   },
   "Emerald \u2014 calls for books": {
    "last_ok": null,
-   "zero_runs": 18
+   "zero_runs": 19
   },
   "FAO Jobs": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "GIZ Jobs": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "IGI Global \u2014 calls for chapters": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "ILO Jobs": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "IRC Careers": {
    "last_ok": null,
-   "zero_runs": 17
+   "zero_runs": 18
   },
   "Idealist \u2014 Instructional Design (remote)": {
    "last_ok": "2026-11-19",
-   "zero_runs": 0
+   "zero_runs": 1
   },
   "Impactpool": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "KENET": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "Kenya Public Tenders (PPIP)": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "LinkedIn job alerts (email)": {
    "last_ok": "2026-11-13",
-   "zero_runs": 6
+   "zero_runs": 7
   },
   "Medair Tenders": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "Mercy Corps Careers": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "NGO Tenders \u2014 ID consultants": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "Open web search": {
-   "last_ok": "2026-11-17",
-   "zero_runs": 2
+   "last_ok": "2026-11-20",
+   "zero_runs": 0
   },
   "Penn CFP list \u2014 education": {
-   "last_ok": "2026-11-18",
-   "zero_runs": 1
+   "last_ok": "2026-11-20",
+   "zero_runs": 0
   },
   "ReliefWeb Jobs (global)": {
    "last_ok": null,
-   "zero_runs": 18
+   "zero_runs": 19
   },
   "ReliefWeb site search (jobs)": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "ReliefWeb site search (training/other)": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "Save the Children Jobs": {
    "last_ok": null,
-   "zero_runs": 17
+   "zero_runs": 18
   },
   "UN Careers": {
    "last_ok": null,
-   "zero_runs": 17
+   "zero_runs": 18
   },
   "UNDP Jobs": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "UNESCO Careers": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "UNGM Notices": {
    "last_ok": null,
-   "zero_runs": 18
+   "zero_runs": 19
   },
   "UNICEF Jobs": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "UNICEF Supply & Procurement Notices": {
    "last_ok": null,
-   "zero_runs": 17
+   "zero_runs": 18
   },
   "UNITAR Vacancies": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "UNjobs \u2014 E-learning": {
    "last_ok": "2026-11-15",
-   "zero_runs": 4
+   "zero_runs": 5
   },
   "UNjobs \u2014 Instructional Design": {
-   "last_ok": "2026-11-18",
-   "zero_runs": 1
+   "last_ok": "2026-11-20",
+   "zero_runs": 0
   },
   "UNjobs \u2014 Learning Management Systems": {
-   "last_ok": "2026-11-18",
-   "zero_runs": 1
+   "last_ok": "2026-11-20",
+   "zero_runs": 0
   },
   "WHO Careers": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "WikiCFP \u2014 calls for papers": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "World Bank Procurement (consulting notices)": {
@@ -251,12 +255,12 @@
    "zero_runs": 0
   },
   "World Bank Procurement (open consulting notices)": {
-   "last_ok": "2026-11-19",
+   "last_ok": "2026-11-20",
    "zero_runs": 0
   },
   "fundsforNGOs (grants)": {
    "last_ok": null,
-   "zero_runs": 18
+   "zero_runs": 19
   }
  },
  "seen": {
@@ -300,6 +304,20 @@
   "t:impactpool.org|international consultant e learning design": "2026-11-14",
   "t:impactpool.org|program officer instructional design irc": "2026-11-04",
   "t:impactpool.org|program officer instructional design multimedia": "2026-11-04",
+  "t:infoprolearning.recruitee.com|art director elearning media innovation": "2026-11-20",
+  "t:infoprolearning.recruitee.com|associate product manager hr tech": "2026-11-20",
+  "t:infoprolearning.recruitee.com|contract senior technical instructional designer": "2026-11-20",
+  "t:infoprolearning.recruitee.com|creative designer senior creative designer": "2026-11-20",
+  "t:infoprolearning.recruitee.com|instructional designer contract onsite noida": "2026-11-20",
+  "t:infoprolearning.recruitee.com|instructional designer learning solutions onsite": "2026-11-20",
+  "t:infoprolearning.recruitee.com|learning curator learning experience designer": "2026-11-20",
+  "t:infoprolearning.recruitee.com|learning experience designer lxd onsite": "2026-11-20",
+  "t:infoprolearning.recruitee.com|part time contract absorb lms": "2026-11-20",
+  "t:infoprolearning.recruitee.com|product manager hr tech lms": "2026-11-20",
+  "t:infoprolearning.recruitee.com|project manager elearning solutions corporate": "2026-11-20",
+  "t:infoprolearning.recruitee.com|quality assurance analyst elearning contract": "2026-11-20",
+  "t:infoprolearning.recruitee.com|senior instructional designer onsite noida": "2026-11-20",
+  "t:infoprolearning.recruitee.com|senior product manager hr tech": "2026-11-20",
   "t:ipcollective.ca|pdfrequest for proposal rfp e": "2026-11-15",
   "t:jios.foi.hr|jios special issue actionable learning": "2026-11-04",
   "t:jobs.lever.co|contract senior technical instructional designer": "2026-11-19",
@@ -388,8 +406,11 @@
   "t:unssc.org|call for expression of interest": "2026-11-04",
   "t:unssc.org|pdfcall for expression of interest": "2026-11-04",
   "t:webalearn.com|elearning consultant for digital learning": "2026-11-11",
+  "t:wikicfp.com|aaie 2027 2027 asia conference": "2026-11-20",
+  "t:wikicfp.com|aaie ei 2027 2027 asia": "2026-11-20",
   "t:wikicfp.com|acie 2027 2027 the 7th": "2026-11-16",
   "t:wikicfp.com|acity 2026 16thinternational conference on": "2026-11-10",
+  "t:wikicfp.com|acm aamlds 2026": "2026-11-20",
   "t:wikicfp.com|acm aiat 2026 acm 2026": "2026-11-11",
   "t:wikicfp.com|acm apit 2027 acm 2027": "2026-11-11",
   "t:wikicfp.com|acm ccat 2026 acm 2026": "2026-11-11",
@@ -401,6 +422,7 @@
   "t:wikicfp.com|acm iciit 2027": "2026-11-09",
   "t:wikicfp.com|acm icit 2026 acm 2026": "2026-11-11",
   "t:wikicfp.com|acm icseb 2026": "2026-11-11",
+  "t:wikicfp.com|acm mlci 2027 acm 2027": "2026-11-20",
   "t:wikicfp.com|adcom 2027 13th international conference": "2026-11-17",
   "t:wikicfp.com|adip 2026 spie 2026 8th": "2026-11-11",
   "t:wikicfp.com|aeet 2027 ieee 2027 3rd": "2026-11-12",
@@ -415,18 +437,21 @@
   "t:wikicfp.com|ai sec 2027 the 3rd": "2026-11-04",
   "t:wikicfp.com|aiact 2027 2027 11th international": "2026-11-16",
   "t:wikicfp.com|aiat 2026 acm 2026 6th": "2026-11-11",
+  "t:wikicfp.com|aicas 2027 the 9th ieee": "2026-11-20",
   "t:wikicfp.com|aicm ei 2027 2027 international": "2026-11-12",
   "t:wikicfp.com|aics 2026 2026 international academic": "2026-11-04",
   "t:wikicfp.com|aidds 2026 12th international conference": "2026-11-10",
   "t:wikicfp.com|aidl 2026 2026 3rd international": "2026-11-04",
   "t:wikicfp.com|aidmm 2027 2027 2nd international": "2026-11-18",
   "t:wikicfp.com|aies 2026 springer 2026 international": "2026-11-09",
+  "t:wikicfp.com|aiesc 2027 the international conference": "2026-11-20",
   "t:wikicfp.com|aihealth 2027": "2026-11-17",
   "t:wikicfp.com|aimds 2026 3rd international conference": "2026-11-10",
   "t:wikicfp.com|aime 2027 25th international conference": "2026-11-09",
   "t:wikicfp.com|aimedia 2027 the third international": "2026-11-17",
   "t:wikicfp.com|aimlnet 2026 6th international conference": "2026-11-10",
   "t:wikicfp.com|ainmd 2026 2026 international conference": "2026-11-04",
+  "t:wikicfp.com|aires 2027 the first international": "2026-11-20",
   "t:wikicfp.com|aisca 2027 11th international conference": "2026-11-11",
   "t:wikicfp.com|aisra 2026 2026 international conference": "2026-11-10",
   "t:wikicfp.com|aisys 2027 the fourth international": "2026-11-10",
@@ -443,6 +468,7 @@
   "t:wikicfp.com|behaviour learning the economy 2026": "2026-11-04",
   "t:wikicfp.com|bigml 2026 7th international conference": "2026-11-10",
   "t:wikicfp.com|blkca 2026 4th international conference": "2026-11-10",
+  "t:wikicfp.com|call for papers 2026": "2026-11-20",
   "t:wikicfp.com|canceled ai voyage 2026": "2026-11-04",
   "t:wikicfp.com|ccat 2026 acm 2026 5th": "2026-11-11",
   "t:wikicfp.com|ccet 2027 2027 10th international": "2026-11-11",
@@ -493,6 +519,7 @@
   "t:wikicfp.com|dsa 2026 7th international conference": "2026-11-10",
   "t:wikicfp.com|dtm 2026 2026 2nd international": "2026-11-11",
   "t:wikicfp.com|e rei n 14 call": "2026-11-04",
+  "t:wikicfp.com|eait 2027 ieee 2027 8th": "2026-11-20",
   "t:wikicfp.com|eccst 2026 ieee 2026 6th": "2026-11-04",
   "t:wikicfp.com|ecml pkdd 2026": "2026-11-19",
   "t:wikicfp.com|ecml pkdd 2026 ads 2026": "2026-11-19",
@@ -502,6 +529,7 @@
   "t:wikicfp.com|eeet 2026 springer 2026 9th": "2026-11-11",
   "t:wikicfp.com|eei 2026 9th international conference": "2026-11-10",
   "t:wikicfp.com|eeit 2027 ieee 2027 the": "2026-11-09",
+  "t:wikicfp.com|ei scopus mlbdm 2026": "2026-11-20",
   "t:wikicfp.com|eirt 2026 2026 international conference": "2026-11-16",
   "t:wikicfp.com|eknow 2027 the nineteenth international": "2026-11-17",
   "t:wikicfp.com|elml 2027 the nineteenth international": "2026-11-17",
@@ -554,6 +582,7 @@
   "t:wikicfp.com|iccns 2026 2026 the 16th": "2026-11-11",
   "t:wikicfp.com|iccrd 2027 acm 2027 19th": "2026-11-09",
   "t:wikicfp.com|icdip 2027 spie 2027 the": "2026-11-11",
+  "t:wikicfp.com|icdma 2027 2027 ieee 9th": "2026-11-20",
   "t:wikicfp.com|icds 2027 the twenty first": "2026-11-17",
   "t:wikicfp.com|iceba 2026 2026 the 12th": "2026-11-11",
   "t:wikicfp.com|iceba ei 2026": "2026-11-11",
@@ -565,10 +594,14 @@
   "t:wikicfp.com|icerp 2026 2026 the 9th": "2026-11-11",
   "t:wikicfp.com|icetms 2026 2026 10th international": "2026-11-12",
   "t:wikicfp.com|icghit 2027 the international conference": "2026-11-11",
+  "t:wikicfp.com|iciae 2027 the 15th iiae": "2026-11-20",
   "t:wikicfp.com|icibe 2027 acm 2027 the": "2026-11-11",
+  "t:wikicfp.com|icicn 2027 ieee 2027 15th": "2026-11-20",
   "t:wikicfp.com|icict 2027 2027 the 10th": "2026-11-09",
   "t:wikicfp.com|icict ei 2027": "2026-11-09",
   "t:wikicfp.com|icieai 2026 2026 4th international": "2026-11-16",
+  "t:wikicfp.com|iciei 2027 2027 11th international": "2026-11-20",
+  "t:wikicfp.com|iciei ei 2027": "2026-11-20",
   "t:wikicfp.com|iciet 2027 ieee 2027 15th": "2026-11-11",
   "t:wikicfp.com|icigp 2027 ieee 2027 10th": "2026-11-11",
   "t:wikicfp.com|iciit esci 2027": "2026-11-09",
@@ -612,17 +645,22 @@
   "t:wikicfp.com|ieee cacml 2027": "2026-11-10",
   "t:wikicfp.com|ieee cncit 2027": "2026-11-10",
   "t:wikicfp.com|ieee dsis 2026": "2026-11-10",
+  "t:wikicfp.com|ieee dsit 2026": "2026-11-20",
+  "t:wikicfp.com|ieee eait 2027": "2026-11-20",
   "t:wikicfp.com|ieee eeit 2027": "2026-11-09",
   "t:wikicfp.com|ieee icaite 2026": "2026-11-11",
   "t:wikicfp.com|ieee icccbda 2027": "2026-11-18",
   "t:wikicfp.com|ieee iccit 2026": "2026-11-11",
   "t:wikicfp.com|ieee iccr 2026": "2026-11-11",
+  "t:wikicfp.com|ieee icdma 2027": "2026-11-20",
   "t:wikicfp.com|ieee iceit 2027": "2026-11-09",
   "t:wikicfp.com|ieee icetc 2026": "2026-11-11",
+  "t:wikicfp.com|ieee icicn 2027": "2026-11-20",
   "t:wikicfp.com|ieee iciet 2027": "2026-11-11",
   "t:wikicfp.com|ieee iscbi 2027": "2026-11-09",
   "t:wikicfp.com|ieee mdm 2027 cfp ieee": "2026-11-10",
   "t:wikicfp.com|ieee mlcc 2027": "2026-11-09",
+  "t:wikicfp.com|ieee mlnlp 2026": "2026-11-20",
   "t:wikicfp.com|ieee wowmom 2027": "2026-11-19",
   "t:wikicfp.com|ielr 2027 springer 2027 4th": "2026-11-11",
   "t:wikicfp.com|ijaia 2026 international journal of": "2026-11-10",
@@ -662,6 +700,7 @@
   "t:wikicfp.com|jonn 2026 inaugural issue of": "2026-11-09",
   "t:wikicfp.com|kdd 2026 32nd acm sigkdd": "2026-11-19",
   "t:wikicfp.com|kdd mlf 2026 kdd mlf": "2026-11-19",
+  "t:wikicfp.com|kst 2027 2027 19th international": "2026-11-20",
   "t:wikicfp.com|lak 2027 lak 2026 16th": "2026-11-16",
   "t:wikicfp.com|language disorders 2026 online 2026": "2026-11-04",
   "t:wikicfp.com|language education 2026 online 2026": "2026-11-04",
@@ -671,6 +710,8 @@
   "t:wikicfp.com|learning optimization 2026": "2026-11-04",
   "t:wikicfp.com|learning technology": "2026-11-03",
   "t:wikicfp.com|loreslm 2027 the third workshop": "2026-11-09",
+  "t:wikicfp.com|love 2027 love actually eros": "2026-11-20",
+  "t:wikicfp.com|loyalagents aaai 2027": "2026-11-20",
   "t:wikicfp.com|ltedi 2027 seventh workshop on": "2026-11-10",
   "t:wikicfp.com|mcai 2026 ieee 2026 6th": "2026-11-10",
   "t:wikicfp.com|memat 2026 2026 7th international": "2026-11-19",
@@ -680,6 +721,7 @@
   "t:wikicfp.com|mlaij 2026 machine learning and": "2026-11-10",
   "t:wikicfp.com|mlann 2027 2027 5th asia": "2026-11-10",
   "t:wikicfp.com|mlcc 2027 ieee 2027 international": "2026-11-09",
+  "t:wikicfp.com|mlci 2027 acm 2027 the": "2026-11-20",
   "t:wikicfp.com|mlcipr 2026 2026 3rd international": "2026-11-16",
   "t:wikicfp.com|mlcl 2027 8th international conference": "2026-11-12",
   "t:wikicfp.com|mliob 2027 international conference on": "2026-11-10",
@@ -689,6 +731,7 @@
   "t:wikicfp.com|mltec 2026 7th international conference": "2026-11-10",
   "t:wikicfp.com|mod 2027 modernism remodelled a": "2026-11-18",
   "t:wikicfp.com|morphology 2026 online 2026": "2026-11-04",
+  "t:wikicfp.com|ngcs 2027 the ieee international": "2026-11-20",
   "t:wikicfp.com|ngen ai 2026 the 2026": "2026-11-04",
   "t:wikicfp.com|nlaicse 2026 3rd international conference": "2026-11-10",
   "t:wikicfp.com|nldml 2027 6th international conference": "2026-11-12",
@@ -713,6 +756,8 @@
   "t:wikicfp.com|spie icdip 2027": "2026-11-11",
   "t:wikicfp.com|spie icmip 2027": "2026-11-09",
   "t:wikicfp.com|spiscs 2027 2027 6th international": "2026-11-10",
+  "t:wikicfp.com|spml 2027 2027 10th international": "2026-11-20",
+  "t:wikicfp.com|spml ei 2027 2027 10th": "2026-11-20",
   "t:wikicfp.com|spra 2027 spie 2027 7th": "2026-11-11",
   "t:wikicfp.com|springer aeit 2027": "2026-11-09",
   "t:wikicfp.com|springer aies 2026": "2026-11-09",
@@ -723,10 +768,13 @@
   "t:wikicfp.com|springer ielr 2027": "2026-11-11",
   "t:wikicfp.com|springer nlpir 2026": "2026-11-11",
   "t:wikicfp.com|spt 2026 3rd international conference": "2026-11-10",
+  "t:wikicfp.com|sshra 2027 london international conference": "2026-11-20",
   "t:wikicfp.com|stai 2026 workshop on secure": "2026-11-19",
   "t:wikicfp.com|strl 2026 the 5th international": "2026-11-19",
   "t:wikicfp.com|svc 2027 8th international conference": "2026-11-17",
   "t:wikicfp.com|taimma 2027 the first international": "2026-11-17",
+  "t:wikicfp.com|tera 2027 annual international conference": "2026-11-20",
+  "t:wikicfp.com|tera 2027 international conference on": "2026-11-20",
   "t:wikicfp.com|theme collection sovereign ai and": "2026-11-04",
   "t:wikicfp.com|track e at sss 2026": "2026-11-04",
   "t:wikicfp.com|trusttfm satml 2027": "2026-11-12",
@@ -749,9 +797,11 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=137856&copyownerid=169910": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=171242&copyownerid=163993": "2026-11-10",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=175712&copyownerid=169910": "2026-11-04",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=175829&copyownerid=163993": "2026-11-20",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=180624&copyownerid=163993": "2026-11-10",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=181609&copyownerid=163993": "2026-11-10",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=182446&copyownerid=163993": "2026-11-10",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=187819&copyownerid=201395": "2026-11-20",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=189346&copyownerid=194616": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=190474&copyownerid=4772": "2026-11-19",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=190794&copyownerid=4772": "2026-11-19",
@@ -879,6 +929,8 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=194948&copyownerid=13881": "2026-11-09",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=194951&copyownerid=13881": "2026-11-09",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=194952&copyownerid=13881": "2026-11-09",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=194956&copyownerid=201395": "2026-11-20",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=194957&copyownerid=201395": "2026-11-20",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=194959&copyownerid=13881": "2026-11-09",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=194960&copyownerid=13881": "2026-11-09",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=194961&copyownerid=13881": "2026-11-09",
@@ -920,6 +972,7 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=199684&copyownerid=13881": "2026-11-09",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=199688&copyownerid=13881": "2026-11-09",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=199689&copyownerid=13881": "2026-11-09",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=199708&copyownerid=201395": "2026-11-20",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=199886&copyownerid=199099": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=199889&copyownerid=182680": "2026-11-09",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=199892&copyownerid=33993": "2026-11-12",
@@ -937,6 +990,7 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=199977&copyownerid=33993": "2026-11-10",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=200020&copyownerid=199171": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=200044&copyownerid=33993": "2026-11-10",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=200077&copyownerid=163993": "2026-11-20",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=200152&copyownerid=13881": "2026-11-11",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=200155&copyownerid=13881": "2026-11-09",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=200160&copyownerid=13881": "2026-11-11",
@@ -951,6 +1005,7 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=200266&copyownerid=13881": "2026-11-09",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=200267&copyownerid=13881": "2026-11-09",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=200289&copyownerid=4772": "2026-11-19",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=200300&copyownerid=201395": "2026-11-20",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=200313&copyownerid=33993": "2026-11-12",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=200354&copyownerid=33993": "2026-11-10",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=201128&copyownerid=199419": "2026-11-04",
@@ -963,6 +1018,7 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=201348&copyownerid=13881": "2026-11-11",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=201367&copyownerid=33993": "2026-11-10",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=201388&copyownerid=199571": "2026-11-04",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=201566&copyownerid=201395": "2026-11-20",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=201627&copyownerid=199687": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=201650&copyownerid=33993": "2026-11-19",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=201700&copyownerid=13881": "2026-11-04",
@@ -970,6 +1026,8 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=202520&copyownerid=163220": "2026-11-10",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=202536&copyownerid=193627": "2026-11-13",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=202539&copyownerid=33993": "2026-11-10",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=202553&copyownerid=201395": "2026-11-20",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=202554&copyownerid=201395": "2026-11-20",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=202629&copyownerid=13881": "2026-11-18",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=202630&copyownerid=13881": "2026-11-18",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=202670&copyownerid=190618": "2026-11-04",
@@ -991,6 +1049,7 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203234&copyownerid=163220": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203246&copyownerid=198466": "2026-11-19",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203261&copyownerid=320": "2026-11-09",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203291&copyownerid=201390": "2026-11-20",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203343&copyownerid=14805": "2026-11-16",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203345&copyownerid=320": "2026-11-09",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203365&copyownerid=163220": "2026-11-04",
@@ -1003,11 +1062,13 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203457&copyownerid=169910": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203458&copyownerid=169910": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203459&copyownerid=169910": "2026-11-04",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203467&copyownerid=201395": "2026-11-20",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203478&copyownerid=33993": "2026-11-10",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203483&copyownerid=194157": "2026-11-16",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203496&copyownerid=200834": "2026-11-10",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203513&copyownerid=169910": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203515&copyownerid=200596": "2026-11-17",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203566&copyownerid=201395": "2026-11-20",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203574&copyownerid=200642": "2026-11-09",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203587&copyownerid=169910": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203632&copyownerid=163220": "2026-11-04",
@@ -1019,6 +1080,7 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203750&copyownerid=182680": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203798&copyownerid=182680": "2026-11-12",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203859&copyownerid=197257": "2026-11-09",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203865&copyownerid=201395": "2026-11-20",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203874&copyownerid=37616": "2026-11-09",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203887&copyownerid=182680": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203916&copyownerid=183591": "2026-11-11",
@@ -1026,6 +1088,7 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203935&copyownerid=182680": "2026-11-04",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203942&copyownerid=182680": "2026-11-09",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203985&copyownerid=3032": "2026-11-09",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203987&copyownerid=201395": "2026-11-20",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=203989&copyownerid=182680": "2026-11-19",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204077&copyownerid=80806": "2026-11-09",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204083&copyownerid=200880": "2026-11-09",
@@ -1085,12 +1148,27 @@
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204274&copyownerid=83510": "2026-11-17",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204275&copyownerid=83510": "2026-11-17",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204279&copyownerid=163220": "2026-11-17",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204303&copyownerid=106874": "2026-11-20",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204305&copyownerid=182680": "2026-11-18",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204307&copyownerid=177489": "2026-11-18",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204312&copyownerid=179321": "2026-11-18",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204313&copyownerid=179321": "2026-11-18",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204314&copyownerid=179321": "2026-11-18",
   "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204315&copyownerid=179321": "2026-11-18",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204354&copyownerid=106874": "2026-11-20",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204355&copyownerid=106874": "2026-11-20",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204367&copyownerid=13881": "2026-11-20",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204371&copyownerid=13881": "2026-11-20",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204372&copyownerid=13881": "2026-11-20",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204373&copyownerid=13881": "2026-11-20",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204374&copyownerid=13881": "2026-11-20",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204375&copyownerid=13881": "2026-11-20",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204376&copyownerid=13881": "2026-11-20",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204377&copyownerid=13881": "2026-11-20",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204378&copyownerid=13881": "2026-11-20",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204379&copyownerid=13881": "2026-11-20",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204380&copyownerid=13881": "2026-11-20",
+  "u:http://www.wikicfp.com/cfp/servlet/event.showcfp?eventid=204385&copyownerid=179321": "2026-11-20",
   "u:https://ca.linkedin.com/in/grantvanb": "2026-11-03",
   "u:https://campuslifestyle.org/2026/08/04/unicef-digital-learning-consultant/": "2026-11-03",
   "u:https://christytuckerlearning.com/professional-organizations-for-instructional-designers/": "2026-11-03",
@@ -1111,6 +1189,20 @@
   "u:https://groundwork1.com/lms-blog/5-best-lms-non-profits": "2026-11-03",
   "u:https://humentum.org/ngo-training/ngo-lms-and-elearning-services/": "2026-11-03",
   "u:https://humentum.org/ngo-training/our-lms-and-elearning-services/": "2026-11-03",
+  "u:https://infoprolearning.recruitee.com/o/art-director-elearning-media-innovation-onsite-noida-india-open-to-india-based-candidates-only": "2026-11-20",
+  "u:https://infoprolearning.recruitee.com/o/associate-product-manager-hr-tech-lms-talent-platforms-onsite-noida-open-to-india-based-candidates-only": "2026-11-20",
+  "u:https://infoprolearning.recruitee.com/o/contract-senior-technical-instructional-designer-remote-india-us-eastern-working-hours-open-to-india-based-candidates-only": "2026-11-20",
+  "u:https://infoprolearning.recruitee.com/o/creative-designer-senior-creative-designer-elearning-onsite-in-noida-open-to-india-based-candidates-only-1": "2026-11-20",
+  "u:https://infoprolearning.recruitee.com/o/instructional-designer-contract-onsite-noida-or-pune-india-open-to-india-based-candidates-only": "2026-11-20",
+  "u:https://infoprolearning.recruitee.com/o/instructional-designer-learning-solutions-onsite-noida-open-to-india-based-candidates-only": "2026-11-20",
+  "u:https://infoprolearning.recruitee.com/o/learning-curator-learning-experience-designer-onsite-noida-india-open-to-india-based-candidates-only": "2026-11-20",
+  "u:https://infoprolearning.recruitee.com/o/learning-experience-designer-lxd-onsite-noida-or-pune-open-to-india-based-candidates-only": "2026-11-20",
+  "u:https://infoprolearning.recruitee.com/o/part-time-contract-absorb-lms-administrator-remote-india-evening-hours-open-to-india-based-candidates-only": "2026-11-20",
+  "u:https://infoprolearning.recruitee.com/o/product-manager-hr-tech-lms-talent-platforms-hybrid-princeton-nj-open-to-us-based-candidates-only": "2026-11-20",
+  "u:https://infoprolearning.recruitee.com/o/project-manager-elearning-solutions-corporate-learning-onsite-noida-open-to-india-based-candidates-only": "2026-11-20",
+  "u:https://infoprolearning.recruitee.com/o/quality-assurance-analyst-elearning-contract-open-to-india-based-candidates-only-noida-or-pune": "2026-11-20",
+  "u:https://infoprolearning.recruitee.com/o/senior-instructional-designer-onsite-noida-open-to-india-based-candidates-only": "2026-11-20",
+  "u:https://infoprolearning.recruitee.com/o/senior-product-manager-hr-tech-lms-talent-platforms-onsite-noida-india-open-to-india-based-candidates-only": "2026-11-20",
   "u:https://jios.foi.hr/special-issue/": "2026-11-04",
   "u:https://jobs.lever.co/jobgether/0c702945-1f87-4887-9aa9-109213403f99": "2026-11-19",
   "u:https://jobs.lever.co/jobgether/17465a70-ec37-4cb7-931e-d544048d720c": "2026-11-19",
