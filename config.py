@@ -165,6 +165,10 @@ GRANT_WEB_QUERIES = [
     "research grant educational technology Africa {year}",
     "edtech grant nonprofit Africa {year}",
     "fellowship open and distance learning {year}",
+    "innovation challenge edtech Africa {year}",
+    "call for concept notes digital skills youth Kenya {year}",
+    "open call AI readiness education grant {year}",
+    "funding for universities e-learning Africa {year}",
 ]
 MAX_ITEMS_IN_EMAIL = 40  # top-scored items go in the email; the rest stay on the dashboard
 
@@ -269,6 +273,17 @@ MAX_RESULTS_PER_WEB_SEARCH_QUERY = 8
 # some (DevelopmentAid, Idealist) gate full detail behind a membership
 # login — scraping will surface titles/snippets from public pages only.
 # ---------------------------------------------------------------------------
+# Sources that returned nothing in all 21-22 runs so far (JavaScript walls, logins,
+# changed URLs). Switched off so they stop wasting browser time and alert noise.
+# Remove a name from this list to try it again. ReliefWeb is NOT here: it only
+# needs the RELIEFWEB_APPNAME secret (see README).
+DISABLED_SOURCES = [
+    "DevelopmentAid — Jobs", "DevelopmentAid — Tenders (consultancies)", "DevelopmentAid — Grants",
+    "Devex Jobs — Instructional Design", "Devex Funding (grants)", "fundsforNGOs (grants)",
+    "UN Careers", "AfDB Procurement", "UNICEF Supply & Procurement Notices", "UNGM Notices",
+    "Save the Children Jobs", "IRC Careers",
+]
+
 SOURCES = [
     {
         # ReliefWeb retired API v1 and disables any appname that has not been
@@ -407,6 +422,14 @@ SOURCES = [
     {"name": "KENET", "type": "org_site", "url": "https://www.kenet.or.ke", "wp_search": True, "region": "Kenya/Africa"},
     {"name": "APHRC", "type": "org_site", "url": "https://aphrc.org", "wp_search": True, "region": "Kenya/Africa"},
 
+    # --- grants & funding calls: RSS feeds (reliable; the old scraped grant pages never worked) ---
+    {"name": "fundsforNGOs feed", "type": "rss", "url": "https://www.fundsforngos.org/feed/",
+     "topic_only": True, "category": "Grant"},
+    {"name": "Opportunity Desk feed", "type": "rss", "url": "https://opportunitydesk.org/feed/",
+     "topic_only": True, "category": "Grant"},
+    {"name": "Opportunities for Africans feed", "type": "rss", "url": "https://www.opportunitiesforafricans.com/feed/",
+     "topic_only": True, "category": "Grant"},
+
     # LinkedIn: reads the job-alert emails LinkedIn sends YOU (IMAP, read-only, same
     # Gmail app password as the digest). Create alerts at linkedin.com/jobs with
     # "email" notifications; saved searches that work well: "instructional designer",
@@ -433,7 +456,43 @@ SEEN_RETENTION_DAYS = 365  # forget dedup entries older than this
 # consultancies and grants above jobs, onsite-elsewhere roles pushed down.
 # ---------------------------------------------------------------------------
 HOME_REGION_KEYWORDS = ["kenya", "nairobi", "east africa", "africa", "sub-saharan"]
-CATEGORY_SCORE = {"Consultancy": 3, "Academic": 3, "Grant": 2, "Job": 1, "Uncertain": 0}
+CATEGORY_SCORE = {"Consultancy": 3, "Academic": 3, "Grant": 3, "Job": 2, "Uncertain": 0}
+
+# What gets reported. Academic (calls for papers) is OFF: it was 60% of the log
+# and buried the three categories you want. Add "Academic" to switch it back on.
+REPORT_CATEGORIES = ["Consultancy", "Job", "Grant", "Uncertain"]
+
+# A role title on its own ("Instructional Designer", "Programme Officer") has no
+# "vacancy"/"hiring" word, so it used to fall into Uncertain. These make it a Job.
+JOB_TITLE_WORDS = [
+    "instructional designer", "learning designer", "learning experience designer", "course designer",
+    "e-learning developer", "elearning developer", "lms administrator", "moodle administrator",
+    "learning technologist", "educational technologist", "curriculum developer",
+    "officer", "manager", "specialist", "coordinator", "advisor", "adviser", "analyst",
+    "director", "head of", "lead", "lecturer", "developer", "engineer", "producer",
+    "associate", "assistant", "trainer", "facilitator", "designer", "administrator",
+    "intern", "internship", "fellow",
+]
+# Weak grant words, checked only after consultancy and job words so that
+# "Grants Manager" stays a Job.
+GRANT_TITLE_WORDS = [
+    "grant", "grants", "funding", "fund", "prize", "innovation challenge", "challenge fund",
+    "call for ideas", "call for applications", "open call", "scholarship", "seed funding",
+]
+
+# Fallback category when the title itself is ambiguous: what the source mostly lists.
+SOURCE_DEFAULT_CATEGORY = {
+    "UNjobs — Instructional Design": "Job", "UNjobs — E-learning": "Job",
+    "UNjobs — Learning Management Systems": "Job", "Idealist — Instructional Design (remote)": "Job",
+    "Impactpool": "Job", "UNDP Jobs": "Job", "UNICEF Jobs": "Job", "UNESCO Careers": "Job",
+    "ILO Jobs": "Job", "FAO Jobs": "Job", "WHO Careers": "Job", "UNITAR Vacancies": "Job",
+    "Mercy Corps Careers": "Job", "Amref Health Africa Careers": "Job", "GIZ Jobs": "Job",
+    "BrighterMonday Kenya": "Job", "Corporate Staffing Kenya": "Job", "Corporate Staffing Kenya (LMS)": "Job",
+    "ReliefWeb Jobs (global)": "Job", "ReliefWeb site search (jobs)": "Job",
+    "Kenya Public Tenders (PPIP)": "Consultancy", "Medair Tenders": "Consultancy",
+    "NGO Tenders — ID consultants": "Consultancy", "World Bank Procurement (open consulting notices)": "Consultancy",
+    "fundsforNGOs feed": "Grant", "Opportunity Desk feed": "Grant", "Opportunities for Africans feed": "Grant",
+}
 LOCATION_NEUTRAL_CATEGORIES = ["Academic"]  # location is irrelevant for papers/journals
 APC_NO_FEE_SCORE = 3                        # explicit "no APC / free to publish"
 REMOTE_SCORE = 3

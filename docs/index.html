@@ -155,6 +155,7 @@ function matches(r){
   const q=$("q").value.trim().toLowerCase();
   if(q && !q.split(/\s+/).every(w=>r.hay.includes(w))) return false;
   if($("cat").value && r.category!==$("cat").value) return false;
+  if(!$("cat").value && r.category==="Academic") return false; // papers only when chosen explicitly
   if($("loc").value && r.location!==$("loc").value) return false;
   if($("src").value && r.source!==$("src").value) return false;
   if(r.score < +$("min").value) return false;

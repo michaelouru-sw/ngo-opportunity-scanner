@@ -122,6 +122,8 @@ ACADEMIC_RE = _compile(config.ACADEMIC_SIGNAL_KEYWORDS)
 ACAD_TOPIC_RE = _compile(config.ACADEMIC_TOPICS)
 GRANT_TOPIC_RE = _compile(config.GRANT_TOPICS)
 GRANT_SIGNAL_RE = _compile(config.GRANT_KEYWORDS + config.GRANT_EXTRA_SIGNALS)
+JOB_TITLE_RE = _compile(getattr(config, "JOB_TITLE_WORDS", []))
+GRANT_TITLE_RE = _compile(getattr(config, "GRANT_TITLE_WORDS", []))
 
 # APC detection (best effort). "No fee" wins over "fee": hybrid pages often
 # say "no APC for the subscription route; OA option costs $X".
@@ -222,9 +224,18 @@ def classify_opportunity(text: str) -> str:
         return "Grant"
     if CONSULT_RE and CONSULT_RE.search(lowered):
         return "Consultancy"
-    if JOB_RE and JOB_RE.search(lowered):
-        return "Job"
+    if (JOB_RE and JOB_RE.search(lowered)) or (JOB_TITLE_RE and JOB_TITLE_RE.search(lowered)):
+        return "Job"  # a role title ("Instructional Designer", "Programme Officer") is a job
+    if GRANT_TITLE_RE and GRANT_TITLE_RE.search(lowered):
+        return "Grant"
     return "Uncertain"
+
+
+def default_category_for(source: str) -> str:
+    """What a source mostly lists, used only when the text itself is ambiguous."""
+    if source.startswith("Board "):  # auto-discovered ATS careers boards
+        return "Job"
+    return getattr(config, "SOURCE_DEFAULT_CATEGORY", {}).get(source, "Uncertain")
 
 
 def classify_location(text: str) -> str:
@@ -419,9 +430,12 @@ def fetch_detail(url: str, want_apc: bool = False):
 
 def _item(source, title, url, snippet="", extra="", deadline=None):
     text = f"{title} {snippet}"
+    category = classify_opportunity(text)
+    if category == "Uncertain":
+        category = default_category_for(source)
     return {
         "source": source, "title": title, "url": url,
-        "category": classify_opportunity(text),
+        "category": category,
         "location": classify_location(text),
         "snippet": snippet, "extra": extra, "deadline": deadline, "apc": "",
     }
@@ -891,7 +905,8 @@ def main() -> int:
     seen = state["seen"]
     now_s = _today_utc().isoformat()
 
-    sources = list(config.SOURCES)
+    off = set(getattr(config, "DISABLED_SOURCES", []))
+    sources = [s for s in config.SOURCES if s.get("enabled", True) and s["name"] not in off]
     sources += [srcmod.board_to_source(k) for k in sorted(state["boards"])]
     if config.WEB_SEARCH_ENABLED:
         sources.append({"name": "Open web search", "type": "web_search"})
@@ -936,6 +951,12 @@ def main() -> int:
     if len(state["boards"]) > cap:
         newest = sorted(state["boards"].items(), key=lambda kv: kv[1], reverse=True)[:cap]
         state["boards"] = dict(newest)
+
+    # only the categories you asked for (config.REPORT_CATEGORIES); filtered BEFORE dedupe
+    # so items from a category that is switched off are not marked "seen" and lost
+    wanted = getattr(config, "REPORT_CATEGORIES", None)
+    if wanted:
+        candidates = [c for c in candidates if c["category"] in wanted]
 
     # 1) dedupe FIRST (url + repost-by-title), 2) only then spend page fetches
     new, batch_keys = [], set()

@@ -462,9 +462,49 @@ def build_fetchers(core) -> dict:
         h["boards"] = sorted(set(h["boards"]))
         return fin(items, h)
 
+    # ---- RSS / Atom feeds (grant and opportunity blogs) -------------------
+
+    def rss(src):
+        """Reads a WordPress-style feed. Far more reliable than scraping the
+        site. Items are kept when title+summary match your topics; a deadline
+        written in the summary is picked up, otherwise the detail-page check
+        looks for one."""
+        import xml.etree.ElementTree as ET
+        h, items, seen = H(), [], set()
+        match = core.topic_matches if src.get("topic_only") else core.matches_keywords
+        for url in src.get("urls") or [src["url"]]:
+            try:
+                r = S.get(url, timeout=timeout)
+                r.raise_for_status()
+                root = ET.fromstring(r.content)
+            except Exception as exc:
+                h["error"] = str(exc)[:160]
+                continue
+            for node in root.iter():
+                if node.tag.split("}")[-1] not in ("item", "entry"):
+                    continue
+                h["raw"] += 1
+                f = {c.tag.split("}")[-1]: c for c in node}
+                title = (f["title"].text or "").strip() if "title" in f else ""
+                link = (f["link"].text or f["link"].get("href") or "").strip() if "link" in f else ""
+                desc = ""
+                for k in ("description", "summary", "encoded", "content"):
+                    if k in f and f[k].text:
+                        desc = BeautifulSoup(f[k].text, "html.parser").get_text(" ", strip=True)
+                        break
+                if not title or not link or link in seen:
+                    continue
+                if not match(f"{title} {desc[:600]}") or core.is_blocked_url(link):
+                    continue
+                seen.add(link)
+                it = mk(src, title, link, snippet=desc[:600])
+                it["deadline"] = core.find_deadline_in_text(desc)
+                items.append(it)
+        return fin(items, h)
+
     return {
         "greenhouse": greenhouse, "lever": lever, "smartrecruiters": smartrecruiters,
         "workable": workable, "recruitee": recruitee, "workday": workday,
         "worldbank": worldbank, "org_site": org_site, "doaj": doaj,
-        "linkedin_alerts": linkedin_alerts,
+        "linkedin_alerts": linkedin_alerts, "rss": rss,
     }
